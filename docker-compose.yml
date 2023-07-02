@@ -1,0 +1,27 @@
+version: '3.4'
+
+services:
+  api:
+    container_name: InteractiveScheduleUadApi
+    build:
+      context: .
+      dockerfile: InteractiveScheduleUad.Api/Dockerfile
+    env_file:
+      - .env
+    depends_on:
+      - db
+    networks:
+      - mynetwork
+  db:
+    image: postgres:15-alpine
+    container_name: ISUadPostgresDb
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:
+    driver: bridge
