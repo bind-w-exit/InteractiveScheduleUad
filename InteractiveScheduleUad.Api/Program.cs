@@ -43,7 +43,7 @@ var connectionString = GetDbConnectionString(builder.Configuration);
 builder.Services.AddDbContext<DbContext, InteractiveScheduleUadApiDbContext>(options =>
     options.UseNpgsql(connectionString));
 
-builder.Services.AddTransient<ICourseRepository, CourseRepository>();
+builder.Services.AddTransient<ISubjectRepository, SubjectRepository>();
 builder.Services.AddTransient<IDepartmentRepository, DepartmentRepository>();
 builder.Services.AddTransient<IStudentsGroupRepository, StudentsGroupRepository>();
 builder.Services.AddTransient<ITeacherRepository, TeacherRepository>();
@@ -53,7 +53,7 @@ builder.Services.AddTransient<IDepartmentService, DepartmentService>();
 builder.Services.AddTransient<IStudentsGroupService, StudentsGroupService>();
 builder.Services.AddTransient<IWeekScheduleService, WeekScheduleService>();
 builder.Services.AddTransient<IRoomService, RoomService>();
-builder.Services.AddTransient<ICourseService, CourseService>();
+builder.Services.AddTransient<ISubjectService, SubjectService>();
 builder.Services.AddTransient<ITeacherService, TeacherService>();
 
 var app = builder.Build();

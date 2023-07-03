@@ -2,6 +2,6 @@
 
 namespace InteractiveScheduleUad.Api.Repositories.Contracts;
 
-public interface ICourseRepository : IRepositoryBase<Course>
+public interface ISubjectRepository : IRepositoryBase<Subject>
 {
 }

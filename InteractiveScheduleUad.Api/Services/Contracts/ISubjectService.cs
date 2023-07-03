@@ -2,13 +2,13 @@
 
 namespace InteractiveScheduleUad.Api.Services.Contracts;
 
-public interface ICourseService
+public interface ISubjectService
 {
-    Task<Course> CreateAsync(string name);
+    Task<Subject> CreateAsync(string name);
 
-    Task<IEnumerable<Course>> GetAllAsync();
+    Task<IEnumerable<Subject>> GetAllAsync();
 
-    Task<Course?> GetByIdAsync(int id);
+    Task<Subject?> GetByIdAsync(int id);
 
     Task<bool> UpdateAsync(int id, string newName);
 

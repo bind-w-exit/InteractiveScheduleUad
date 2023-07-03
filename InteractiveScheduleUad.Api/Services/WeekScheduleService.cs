@@ -10,18 +10,18 @@ public class WeekScheduleService : IWeekScheduleService
 {
     private readonly IStudentsGroupRepository _studentsGroupRepository;
     private readonly ITeacherRepository _teacherRepository;
-    private readonly Repositories.Contracts.ICourseRepository _courseRepository;
+    private readonly ISubjectRepository _subjectRepository;
     private readonly IRoomRepository _roomRepository;
 
     public WeekScheduleService(
         IStudentsGroupRepository studentsGroupRepository,
         ITeacherRepository teacherRepository,
-        Repositories.Contracts.ICourseRepository courseRepository,
+        ISubjectRepository subjectRepository,
         IRoomRepository roomRepository)
     {
         _studentsGroupRepository = studentsGroupRepository;
         _teacherRepository = teacherRepository;
-        _courseRepository = courseRepository;
+        _subjectRepository = subjectRepository;
         _roomRepository = roomRepository;
     }
 
@@ -95,7 +95,7 @@ public class WeekScheduleService : IWeekScheduleService
     private async Task<Lesson> LessonForWriteDtoToLesson(LessonForWriteDto lessonForWriteDto)
     {
         var teacherTask = _teacherRepository.GetByIdAsync(lessonForWriteDto.TeacherId);
-        var subjectTask = _courseRepository.GetByIdAsync(lessonForWriteDto.SubjectId);
+        var subjectTask = _subjectRepository.GetByIdAsync(lessonForWriteDto.SubjectId);
         var roomTask = _roomRepository.GetByIdAsync(lessonForWriteDto.RoomId);
 
         await Task.WhenAll(teacherTask, subjectTask, roomTask);

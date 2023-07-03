@@ -1,6 +1,6 @@
 ﻿namespace InteractiveScheduleUad.Api.Models;
 
-public class Course
+public class Subject
 {
     public int Id { get; set; }
 

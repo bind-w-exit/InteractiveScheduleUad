@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace InteractiveScheduleUad.Api.Repositories;
 
-public class CourseRepository : RepositoryBase<Course>, ICourseRepository
+public class SubjectRepository : RepositoryBase<Subject>, ISubjectRepository
 {
-    public CourseRepository(DbContext context) : base(context)
+    public SubjectRepository(DbContext context) : base(context)
     {
     }
 }

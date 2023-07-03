@@ -14,7 +14,7 @@ public class InteractiveScheduleUadApiDbContext : DbContext
 
     public DbSet<Teacher> Teachers { get; set; }
 
-    public DbSet<Course> Courses { get; set; }
+    public DbSet<Subject> Subjects { get; set; }
 
     public DbSet<Department> Departments { get; set; }
 
