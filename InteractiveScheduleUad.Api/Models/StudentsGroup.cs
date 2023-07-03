@@ -6,7 +6,7 @@ public class StudentsGroup
 
     public string GroupName { get; set; }
 
-    public WeekSchedule? FirstWeekSchedules { get; set; }
+    public WeekSchedule? FirstWeekSchedule { get; set; }
 
-    public WeekSchedule? SecondWeekSchedules { get; set; }
+    public WeekSchedule? SecondWeekSchedule { get; set; }
 }

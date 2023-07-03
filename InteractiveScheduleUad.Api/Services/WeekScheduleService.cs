@@ -35,13 +35,13 @@ public class WeekScheduleService : IWeekScheduleService
         WeekSchedule weekSchedule = await WeekScheduleForReadDtoToWeekSchedule(weekScheduleForWriteDto);
 
         if (isSecondWeek)
-            studentsGroup.SecondWeekSchedules = weekSchedule;
+            studentsGroup.SecondWeekSchedule = weekSchedule;
         else
-            studentsGroup.FirstWeekSchedules = weekSchedule;
+            studentsGroup.FirstWeekSchedule = weekSchedule;
 
         await _studentsGroupRepository.SaveChangesAsync();
 
-        return WeekScheduleMapper.WeekScheduleToWeekScheduleDto(weekSchedule);
+        return WeekScheduleMapper.WeekScheduleToWeekScheduleForReadDto(weekSchedule);
     }
 
     public async Task<bool> DeleteAsync(int studentsGroupId, bool isSecondWeek)
@@ -52,9 +52,9 @@ public class WeekScheduleService : IWeekScheduleService
             return false;
 
         if (isSecondWeek)
-            studentsGroup.SecondWeekSchedules = null;
+            studentsGroup.SecondWeekSchedule = null;
         else
-            studentsGroup.FirstWeekSchedules = null;
+            studentsGroup.FirstWeekSchedule = null;
 
         await _studentsGroupRepository.SaveChangesAsync();
 
@@ -65,7 +65,7 @@ public class WeekScheduleService : IWeekScheduleService
     {
         var studentsGroup = await _studentsGroupRepository.GetByIdAsync(studentsGroupId);
 
-        return StudentsGroupMapper.StudentsGroupToStudentsGroupDto(studentsGroup);
+        return StudentsGroupMapper.StudentsGroupToStudentsGroupForWriteDto(studentsGroup);
     }
 
     private async Task<WeekSchedule> WeekScheduleForReadDtoToWeekSchedule(WeekScheduleForWriteDto weekScheduleForWriteDto)

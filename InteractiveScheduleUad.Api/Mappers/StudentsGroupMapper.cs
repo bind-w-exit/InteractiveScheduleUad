@@ -7,13 +7,13 @@ namespace InteractiveScheduleUad.Api.Mappers;
 [Mapper]
 public static partial class StudentsGroupMapper
 {
-    [MapperIgnoreSource(nameof(StudentsGroup.FirstWeekSchedules))]
-    [MapperIgnoreSource(nameof(StudentsGroup.SecondWeekSchedules))]
-    public static partial StudentsGroupForReadDto StudentsGroupToStudentsGroupForListDto(StudentsGroup studentsGroup);
+    [MapperIgnoreSource(nameof(StudentsGroup.FirstWeekSchedule))]
+    [MapperIgnoreSource(nameof(StudentsGroup.SecondWeekSchedule))]
+    public static partial StudentsGroupForReadDto StudentsGroupToStudentsGroupForReadDto(StudentsGroup studentsGroup);
 
     [MapperIgnoreSource(nameof(StudentsGroup.Id))]
-    public static partial StudentsGroupForWriteDto StudentsGroupToStudentsGroupDto(StudentsGroup studentsGroup);
+    public static partial StudentsGroupForWriteDto StudentsGroupToStudentsGroupForWriteDto(StudentsGroup studentsGroup);
 
-    private static WeekScheduleForReadDto WeekScheduleToWeekScheduleDto(WeekSchedule weekSchedule)
-        => WeekScheduleMapper.WeekScheduleToWeekScheduleDto(weekSchedule);
+    private static WeekScheduleForReadDto WeekScheduleToWeekScheduleForReadDto(WeekSchedule weekSchedule)
+        => WeekScheduleMapper.WeekScheduleToWeekScheduleForReadDto(weekSchedule);
 }

@@ -44,7 +44,7 @@ public class StudentsGroupService : IStudentsGroupService
         List<StudentsGroupForReadDto> studentsGroupsForListDto = new();
         foreach (var studentsGroup in studentsGroups)
         {
-            studentsGroupsForListDto.Add(StudentsGroupMapper.StudentsGroupToStudentsGroupForListDto(studentsGroup));
+            studentsGroupsForListDto.Add(StudentsGroupMapper.StudentsGroupToStudentsGroupForReadDto(studentsGroup));
         }
 
         return studentsGroupsForListDto;
@@ -55,7 +55,7 @@ public class StudentsGroupService : IStudentsGroupService
         var studentsGroup = await _studentsGroupRepository.GetByIdAsync(id);
 
         if (studentsGroup is not null)
-            return StudentsGroupMapper.StudentsGroupToStudentsGroupForListDto(studentsGroup);
+            return StudentsGroupMapper.StudentsGroupToStudentsGroupForReadDto(studentsGroup);
 
         return null;
     }

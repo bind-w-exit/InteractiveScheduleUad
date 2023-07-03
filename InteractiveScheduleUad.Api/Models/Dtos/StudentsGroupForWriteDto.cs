@@ -4,7 +4,7 @@ public class StudentsGroupForWriteDto
 {
     public string GroupName { get; set; }
 
-    public WeekScheduleForReadDto FirstWeekSchedules { get; set; }
+    public WeekScheduleForReadDto? FirstWeekSchedule { get; set; }
 
-    public WeekScheduleForReadDto SecondWeekSchedules { get; set; }
+    public WeekScheduleForReadDto? SecondWeekSchedule { get; set; }
 }

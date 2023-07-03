@@ -8,7 +8,7 @@ namespace InteractiveScheduleUad.Api.Mappers;
 public static partial class LessonMapper
 {
     [MapperIgnoreSource(nameof(Lesson.Id))]
-    public static partial LessonForReadDto LessonToLessonDto(Lesson lesson);
+    public static partial LessonForReadDto LessonToLessonForReadDto(Lesson lesson);
 
     private static string ClassTypeToString(ClassType classType)
     {

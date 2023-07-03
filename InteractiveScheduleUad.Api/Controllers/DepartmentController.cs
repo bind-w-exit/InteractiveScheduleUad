@@ -46,7 +46,7 @@ public class DepartmentController : ControllerBase
         var department = await _departmentService.GetByIdAsync(id);
 
         if (department is null)
-            return NotFound("Department group not found.");
+            return NotFound("Department with the specified ID was not found");
         else
             return Ok(department);
     }
