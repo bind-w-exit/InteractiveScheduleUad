@@ -19,7 +19,7 @@ public class DepartmentController : ControllerBase
 
     // GET: api/<DepartmentController>
     /// <summary>
-    /// Returns all departments
+    /// Retrieves all departments
     /// </summary>
     /// <response code="200">Success - Returns an array of departments</response>
     [HttpGet]
@@ -28,7 +28,6 @@ public class DepartmentController : ControllerBase
     public async Task<ActionResult<IEnumerable<Department>>> Get()
     {
         var departments = await _departmentService.GetAllAsync();
-
         return Ok(departments);
     }
 
@@ -38,7 +37,7 @@ public class DepartmentController : ControllerBase
     /// </summary>
     /// <param name="id">Department ID</param>
     /// <response code="200">Success - Returns the department with the specified ID</response>
-    /// <response code="404">Not Found - Department with the specified ID was not found</response>
+    /// <response code="404">NotFound - Department with the specified ID was not found</response>
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(Department), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
@@ -57,14 +56,14 @@ public class DepartmentController : ControllerBase
     /// Creates a new department
     /// </summary>
     /// <param name="newDepartment">The department data</param>
-    /// <response code="201">Success - Returns the created department</response>
+    /// <response code="201">Created - Returns the created department</response>
     /// <response code="400">One or more validation errors occurred</response>
     [HttpPost]
     [ProducesResponseType(typeof(Department), (int)HttpStatusCode.Created)]
     public async Task<ActionResult<Department>> Post([FromBody] DepartmentForWriteDto newDepartment)
     {
         var departmentFromDb = await _departmentService.CreateAsync(newDepartment);
-        return Ok(departmentFromDb);
+        return CreatedAtAction(nameof(Get), new { id = departmentFromDb.Id }, departmentFromDb);
     }
 
     // PUT api/<DepartmentController>/5
