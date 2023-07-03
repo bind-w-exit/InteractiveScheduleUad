@@ -41,7 +41,7 @@ public class ScheduleController : ControllerBase
     /// Update a one week schedule for students group
     /// </summary>
     /// <param name="studentsGroupId">Students group ID</param>
-    /// <param name="weekScheduleForWriteDto">The one week schedule data</param>
+    /// <param name="weekSchedule">The one week schedule data</param>
     /// <param name="isSecondWeek">Specifies which week to update, the first or the second. By default, the first</param>
     /// <response code="201">Success - Successfully updated</response>
     /// <response code="400">One or more validation errors occurred</response>
@@ -49,9 +49,9 @@ public class ScheduleController : ControllerBase
     [HttpPost]
     [ProducesResponseType(typeof(WeekScheduleForReadDto), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-    public async Task<ActionResult<WeekScheduleForReadDto>> Post([FromQuery] int studentsGroupId, [FromBody] WeekScheduleForWriteDto weekScheduleForWriteDto, [FromQuery] bool isSecondWeek = false)
+    public async Task<ActionResult<WeekScheduleForReadDto>> Post([FromQuery] int studentsGroupId, [FromBody] WeekScheduleForWriteDto weekSchedule, [FromQuery] bool isSecondWeek = false)
     {
-        WeekScheduleForReadDto? weekScheduleForReadDto = await _weekScheduleService.CreateAsync(studentsGroupId, weekScheduleForWriteDto, isSecondWeek);
+        WeekScheduleForReadDto? weekScheduleForReadDto = await _weekScheduleService.CreateAsync(studentsGroupId, weekSchedule, isSecondWeek);
 
         if (weekScheduleForReadDto is null)
             return NotFound("Students group with the specified ID was not found");
@@ -72,11 +72,11 @@ public class ScheduleController : ControllerBase
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult> Delete([FromQuery] int studentsGroupId, [FromQuery] bool isSecondWeek = false)
     {
-        var success = await _weekScheduleService.DeleteAsync(studentsGroupId, isSecondWeek);
+        bool success = await _weekScheduleService.DeleteAsync(studentsGroupId, isSecondWeek);
 
-        if (success)
-            return Ok();
-        else
+        if (!success)
             return NotFound("Students group with the specified ID was not found");
+        else
+            return Ok();
     }
 }

@@ -27,7 +27,7 @@ public class DepartmentController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<Department>), (int)HttpStatusCode.OK)]
     public async Task<ActionResult<IEnumerable<Department>>> Get()
     {
-        var departments = await _departmentService.GetAllAsync();
+        IEnumerable<Department> departments = await _departmentService.GetAllAsync();
         return Ok(departments);
     }
 
@@ -43,7 +43,7 @@ public class DepartmentController : ControllerBase
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult<Department>> Get(int id)
     {
-        var department = await _departmentService.GetByIdAsync(id);
+        Department? department = await _departmentService.GetByIdAsync(id);
 
         if (department is null)
             return NotFound("Department with the specified ID was not found");
@@ -55,14 +55,14 @@ public class DepartmentController : ControllerBase
     /// <summary>
     /// Creates a new department
     /// </summary>
-    /// <param name="newDepartment">The department data</param>
+    /// <param name="department">The department data</param>
     /// <response code="201">Created - Returns the created department</response>
     /// <response code="400">One or more validation errors occurred</response>
     [HttpPost]
     [ProducesResponseType(typeof(Department), (int)HttpStatusCode.Created)]
-    public async Task<ActionResult<Department>> Post([FromBody] DepartmentForWriteDto newDepartment)
+    public async Task<ActionResult<Department>> Post([FromBody] DepartmentForWriteDto department)
     {
-        var departmentFromDb = await _departmentService.CreateAsync(newDepartment);
+        Department departmentFromDb = await _departmentService.CreateAsync(department);
         return CreatedAtAction(nameof(Get), new { id = departmentFromDb.Id }, departmentFromDb);
     }
 
@@ -80,7 +80,7 @@ public class DepartmentController : ControllerBase
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult> Put(int id, [FromBody] DepartmentForWriteDto newDepartment)
     {
-        var success = await _departmentService.UpdateAsync(id, newDepartment);
+        bool success = await _departmentService.UpdateAsync(id, newDepartment);
         if (!success)
             return NotFound("Department with the specified ID was not found");
         else
@@ -99,7 +99,7 @@ public class DepartmentController : ControllerBase
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult> Delete(int id)
     {
-        var success = await _departmentService.DeleteAsync(id);
+        bool success = await _departmentService.DeleteAsync(id);
         if (!success)
             return NotFound("Department with the specified ID was not found");
         else

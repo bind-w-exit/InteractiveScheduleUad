@@ -5,7 +5,7 @@ namespace InteractiveScheduleUad.Api.Services.Contracts;
 
 public interface IStudentsGroupService
 {
-    Task<StudentsGroup> CreateAsync(string name);
+    Task<StudentsGroupForReadDto> CreateAsync(string name);
 
     Task<IEnumerable<StudentsGroupForReadDto>> GetAllAsync();
 

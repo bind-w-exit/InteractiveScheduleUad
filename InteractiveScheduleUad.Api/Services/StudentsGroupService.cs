@@ -15,14 +15,14 @@ public class StudentsGroupService : IStudentsGroupService
         _studentsGroupRepository = studentsGroupRepository;
     }
 
-    public async Task<StudentsGroup> CreateAsync(string name)
+    public async Task<StudentsGroupForReadDto> CreateAsync(string name)
     {
         StudentsGroup studentsGroup = new() { GroupName = name };
 
         await _studentsGroupRepository.InsertAsync(studentsGroup);
         await _studentsGroupRepository.SaveChangesAsync();
 
-        return studentsGroup;
+        return StudentsGroupMapper.StudentsGroupToStudentsGroupForReadDto(studentsGroup);
     }
 
     public async Task<bool> DeleteAsync(int id)
