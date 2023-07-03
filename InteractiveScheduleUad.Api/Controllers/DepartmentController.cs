@@ -28,6 +28,7 @@ public class DepartmentController : ControllerBase
     public async Task<ActionResult<IEnumerable<Department>>> Get()
     {
         IEnumerable<Department> departments = await _departmentService.GetAllAsync();
+
         return Ok(departments);
     }
 
@@ -57,12 +58,13 @@ public class DepartmentController : ControllerBase
     /// </summary>
     /// <param name="department">The department data</param>
     /// <response code="201">Created - Returns the created department</response>
-    /// <response code="400">One or more validation errors occurred</response>
+    /// <response code="400">BadRequest - One or more validation errors occurred</response>
     [HttpPost]
     [ProducesResponseType(typeof(Department), (int)HttpStatusCode.Created)]
     public async Task<ActionResult<Department>> Post([FromBody] DepartmentForWriteDto department)
     {
         Department departmentFromDb = await _departmentService.CreateAsync(department);
+
         return CreatedAtAction(nameof(Get), new { id = departmentFromDb.Id }, departmentFromDb);
     }
 
@@ -73,7 +75,7 @@ public class DepartmentController : ControllerBase
     /// <param name="id">The ID of the department to update</param>
     /// <param name="newDepartment">The updated department data</param>
     /// <response code="200">Success - Successfully updated</response>
-    /// <response code="400">One or more validation errors occurred</response>
+    /// <response code="400">BadRequest - One or more validation errors occurred</response>
     /// <response code="404">NotFound - Department with the specified ID was not found</response>
     [HttpPut("{id}")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
@@ -81,6 +83,7 @@ public class DepartmentController : ControllerBase
     public async Task<ActionResult> Put(int id, [FromBody] DepartmentForWriteDto newDepartment)
     {
         bool success = await _departmentService.UpdateAsync(id, newDepartment);
+
         if (!success)
             return NotFound("Department with the specified ID was not found");
         else
@@ -100,6 +103,7 @@ public class DepartmentController : ControllerBase
     public async Task<ActionResult> Delete(int id)
     {
         bool success = await _departmentService.DeleteAsync(id);
+
         if (!success)
             return NotFound("Department with the specified ID was not found");
         else

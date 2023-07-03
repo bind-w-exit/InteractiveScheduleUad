@@ -26,6 +26,7 @@ public class StudentsGroupController : ControllerBase
     public async Task<ActionResult<IEnumerable<StudentsGroupForReadDto>>> Get()
     {
         IEnumerable<StudentsGroupForReadDto> studentsGroups = await _studentsGroupService.GetAllAsync();
+
         return Ok(studentsGroups);
     }
 
@@ -55,12 +56,13 @@ public class StudentsGroupController : ControllerBase
     /// </summary>
     /// <param name="groupName">The students group name</param>
     /// <response code="201">Created - Returns the created students group</response>
-    /// <response code="400">One or more validation errors occurred</response>
+    /// <response code="400">BadRequest - One or more validation errors occurred</response>
     [HttpPost]
     [ProducesResponseType(typeof(StudentsGroupForReadDto), (int)HttpStatusCode.Created)]
     public async Task<ActionResult<StudentsGroupForReadDto>> Post([FromBody] string groupName)
     {
         StudentsGroupForReadDto studentsGroupForReadDto = await _studentsGroupService.CreateAsync(groupName);
+
         return CreatedAtAction(nameof(Get), new { id = studentsGroupForReadDto.Id }, studentsGroupForReadDto);
     }
 
@@ -71,7 +73,7 @@ public class StudentsGroupController : ControllerBase
     /// <param name="id">The ID of the students group to update</param>
     /// <param name="newGroupName">The updated students group name</param>
     /// <response code="200">Success - Successfully updated</response>
-    /// <response code="400">One or more validation errors occurred</response>
+    /// <response code="400">BadRequest - One or more validation errors occurred</response>
     /// <response code="404">NotFound - Students group with the specified ID was not found</response>
     [HttpPut("{id}")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
@@ -79,6 +81,7 @@ public class StudentsGroupController : ControllerBase
     public async Task<ActionResult> Put(int id, [FromBody] string newGroupName)
     {
         bool success = await _studentsGroupService.UpdateAsync(id, newGroupName);
+
         if (!success)
             return NotFound("Students group with the specified ID was not found");
         else
@@ -98,6 +101,7 @@ public class StudentsGroupController : ControllerBase
     public async Task<ActionResult> Delete(int id)
     {
         bool success = await _studentsGroupService.DeleteAsync(id);
+
         if (!success)
             return NotFound("Students group with the specified ID was not found");
         else

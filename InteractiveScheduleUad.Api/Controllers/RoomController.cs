@@ -26,6 +26,7 @@ public class RoomController : ControllerBase
     public async Task<ActionResult<IEnumerable<Room>>> Get()
     {
         IEnumerable<Room> rooms = await _roomService.GetAllAsync();
+
         return Ok(rooms);
     }
 
@@ -55,12 +56,13 @@ public class RoomController : ControllerBase
     /// </summary>
     /// <param name="roomName">The room name</param>
     /// <response code="201">Created - Returns the created room</response>
-    /// <response code="400">One or more validation errors occurred</response>
+    /// <response code="400">BadRequest - One or more validation errors occurred</response>
     [HttpPost]
     [ProducesResponseType(typeof(Room), (int)HttpStatusCode.Created)]
     public async Task<ActionResult<Room>> Post([FromBody] string roomName)
     {
         Room room = await _roomService.CreateAsync(roomName);
+
         return CreatedAtAction(nameof(Get), new { id = room.Id }, room);
     }
 
@@ -71,7 +73,7 @@ public class RoomController : ControllerBase
     /// <param name="id">The ID of the room to update</param>
     /// <param name="newRoomName">The updated room name</param>
     /// <response code="200">Success - Successfully updated</response>
-    /// <response code="400">One or more validation errors occurred</response>
+    /// <response code="400">BadRequest - One or more validation errors occurred</response>
     /// <response code="404">NotFound - Room with the specified ID was not found</response>
     [HttpPut("{id}")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
@@ -79,6 +81,7 @@ public class RoomController : ControllerBase
     public async Task<ActionResult> Put(int id, [FromBody] string newRoomName)
     {
         bool success = await _roomService.UpdateAsync(id, newRoomName);
+
         if (!success)
             return NotFound("Room with the specified ID was not found");
         else
@@ -98,6 +101,7 @@ public class RoomController : ControllerBase
     public async Task<ActionResult> Delete(int id)
     {
         bool success = await _roomService.DeleteAsync(id);
+
         if (!success)
             return NotFound("Room with the specified ID was not found");
         else

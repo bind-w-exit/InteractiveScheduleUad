@@ -44,7 +44,7 @@ public class ScheduleController : ControllerBase
     /// <param name="weekSchedule">The one week schedule data</param>
     /// <param name="isSecondWeek">Specifies which week to update, the first or the second. By default, the first</param>
     /// <response code="201">Success - Successfully updated</response>
-    /// <response code="400">One or more validation errors occurred</response>
+    /// <response code="400">BadRequest - One or more validation errors occurred</response>
     /// <response code="404">NotFound - Students group with the specified ID was not found</response>
     [HttpPost]
     [ProducesResponseType(typeof(WeekScheduleForReadDto), (int)HttpStatusCode.OK)]
