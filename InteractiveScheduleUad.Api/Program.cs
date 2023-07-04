@@ -5,6 +5,7 @@ using InteractiveScheduleUad.Api.Services;
 using InteractiveScheduleUad.Api.Services.Contracts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Npgsql;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -38,10 +39,20 @@ builder.Services.AddSwaggerGen(options =>
     var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 });
+
 // Database
 var connectionString = GetDbConnectionString(builder.Configuration);
-builder.Services.AddDbContext<DbContext, InteractiveScheduleUadApiDbContext>(options =>
-    options.UseNpgsql(connectionString));
+
+if (CheckDbConnection(connectionString))
+{
+    builder.Services.AddDbContext<DbContext, InteractiveScheduleUadApiDbContext>(options =>
+        options.UseNpgsql(connectionString));
+}
+else
+{
+    Console.WriteLine("Failed to connect to the database after multiple attempts. Exiting...");
+    Environment.Exit(1);
+}
 
 builder.Services.AddTransient<ISubjectRepository, SubjectRepository>();
 builder.Services.AddTransient<IDepartmentRepository, DepartmentRepository>();
@@ -85,4 +96,31 @@ static string GetDbConnectionString(IConfiguration configuration)
     var username = configuration["DB_USER"];
     var password = configuration["DB_PASS"];
     return $"Host={host};Database={database};Username={username};Password={password}";
+}
+
+static bool CheckDbConnection(string connectionString)
+{
+    int maxAttempts = 10;
+    int currentAttempt = 0;
+    TimeSpan delay = TimeSpan.FromSeconds(3);
+
+    while (currentAttempt < maxAttempts)
+    {
+        try
+        {
+            using NpgsqlConnection connection = new(connectionString);
+            connection.Open();
+
+            Console.WriteLine("Connected to the database!");
+            return true;
+        }
+        catch (Exception)
+        {
+            currentAttempt++;
+            Console.WriteLine($"Attempt {currentAttempt}/{maxAttempts}: Failed to connect to the database. Retrying in {delay.TotalSeconds} seconds...");
+            Thread.Sleep(delay);
+        }
+    }
+
+    return false;
 }
