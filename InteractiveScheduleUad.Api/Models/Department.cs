@@ -8,5 +8,5 @@ public class Department
 
     public string Abbreviation { get; set; }
 
-    public string Link { get; set; }
+    public string? Link { get; set; }
 }

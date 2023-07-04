@@ -8,13 +8,13 @@ public class Teacher
 
     public string LastName { get; set; }
 
-    public string MiddleName { get; set; }
+    public string? MiddleName { get; set; }
 
-    public string Email { get; set; }
+    public string? Email { get; set; }
 
-    public string Qualifications { get; set; }
+    public string? Qualifications { get; set; }
 
-    public Department Department { get; set; }
+    public Department? Department { get; set; }
 
     public override string ToString()
     {

@@ -14,9 +14,28 @@ public class RepositoryBase<T> : IRepositoryBase<T>
         Context = context ?? throw new ArgumentNullException(nameof(context));
     }
 
-    public virtual async Task<IEnumerable<T>> GetAllAsync()
+    public async Task<IEnumerable<T>> GetAllAsync(bool includeNestedObjects = false)
     {
-        return await Context.Set<T>().ToListAsync();
+        if (includeNestedObjects)
+        {
+            // For returning nested objects instead of null
+            var entityType = Context.Model.FindEntityType(typeof(T));
+            var navigations = entityType?.GetNavigations();
+
+            IQueryable<T> query = Context.Set<T>();
+
+            if (navigations is not null)
+            {
+                foreach (var navigation in navigations)
+                {
+                    query = query.Include(navigation.Name);
+                }
+            }
+
+            return await query.ToListAsync();
+        }
+        else
+            return await Context.Set<T>().ToListAsync();     
     }
 
     public virtual async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate)

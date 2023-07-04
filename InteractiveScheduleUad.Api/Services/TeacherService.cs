@@ -40,7 +40,7 @@ public class TeacherService : ITeacherService
 
     public async Task<IEnumerable<Teacher>> GetAllAsync()
     {
-        return await _teacherRepository.GetAllAsync();
+        return await _teacherRepository.GetAllAsync(true);
     }
 
     public async Task<Teacher?> GetByIdAsync(int id)

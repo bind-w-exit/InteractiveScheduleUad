@@ -10,5 +10,5 @@ public class DepartmentForWriteDto
     [Required]
     public string Abbreviation { get; set; }
 
-    public string Link { get; set; }
+    public string? Link { get; set; }
 }
