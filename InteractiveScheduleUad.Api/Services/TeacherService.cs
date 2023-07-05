@@ -53,28 +53,40 @@ public class TeacherService : ITeacherService
         var teacherFromDb = await _teacherRepository.GetByIdAsync(id);
         if (teacherFromDb is not null)
         {
-            Teacher teacher = await TeacherForWriteDtoToTeacher(teacherForWriteDto);
-            teacher.Id = id;
+            await TeacherForWriteDtoToTeacher(teacherForWriteDto, teacherFromDb);
 
-            _teacherRepository.Update(teacher);
+            _teacherRepository.Update(teacherFromDb);
             await _teacherRepository.SaveChangesAsync();
+
             return true;
         }
         return false;
+    }
+
+    private async Task TeacherForWriteDtoToTeacher(TeacherForWriteDto teacherForWriteDto, Teacher teacher)
+    {
+        var department = await _departmentRepository.GetByIdAsync(teacherForWriteDto.DepartmentId);
+
+        teacher.Department = department;
+        teacher.Email = teacherForWriteDto.Email;
+        teacher.FirstName = teacherForWriteDto.FirstName;
+        teacher.LastName = teacherForWriteDto.LastName;
+        teacher.MiddleName = teacherForWriteDto.MiddleName;
+        teacher.Qualifications = teacherForWriteDto.Qualifications;
     }
 
     private async Task<Teacher> TeacherForWriteDtoToTeacher(TeacherForWriteDto teacherForWriteDto)
     {
         var department = await _departmentRepository.GetByIdAsync(teacherForWriteDto.DepartmentId);
 
-        return new Teacher()
+        return new()
         {
             Department = department,
             Email = teacherForWriteDto.Email,
             FirstName = teacherForWriteDto.FirstName,
             LastName = teacherForWriteDto.LastName,
             MiddleName = teacherForWriteDto.MiddleName,
-            Qualifications = teacherForWriteDto.Qualifications
+            Qualifications = teacherForWriteDto.Qualifications,
         };
     }
 }

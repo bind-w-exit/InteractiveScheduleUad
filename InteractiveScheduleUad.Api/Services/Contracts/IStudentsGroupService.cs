@@ -1,5 +1,4 @@
-﻿using InteractiveScheduleUad.Api.Models;
-using InteractiveScheduleUad.Api.Models.Dtos;
+﻿using InteractiveScheduleUad.Api.Models.Dtos;
 
 namespace InteractiveScheduleUad.Api.Services.Contracts;
 

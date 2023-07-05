@@ -10,5 +10,6 @@ public static partial class WeekScheduleMapper
     [MapperIgnoreSource(nameof(WeekSchedule.Id))]
     public static partial WeekScheduleForReadDto WeekScheduleToWeekScheduleForReadDto(WeekSchedule weekSchedule);
 
-    private static LessonForReadDto LessonToLessonForReadDto(Lesson lesson) => LessonMapper.LessonToLessonForReadDto(lesson);
+    private static LessonForReadDto LessonToLessonForReadDto(Lesson lesson)
+        => LessonMapper.LessonToLessonForReadDto(lesson);
 }

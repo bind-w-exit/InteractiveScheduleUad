@@ -52,11 +52,11 @@ public class DepartmentService : IDepartmentService
         var departmentFromDb = await _departmentRepository.GetByIdAsync(id);
         if (departmentFromDb is not null)
         {
-            Department department = DepartmentMapper.DepartmentCreateDtoToDepartment(departmentCreateDto);
-            department.Id = id;
+            DepartmentMapper.DepartmentCreateDtoToDepartment(departmentCreateDto, departmentFromDb);
 
-            _departmentRepository.Update(department);
+            _departmentRepository.Update(departmentFromDb);
             await _departmentRepository.SaveChangesAsync();
+
             return true;
         }
         return false;

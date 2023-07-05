@@ -65,6 +65,9 @@ public class WeekScheduleService : IWeekScheduleService
     {
         var studentsGroup = await _studentsGroupRepository.GetByIdAsync(studentsGroupId);
 
+        if (studentsGroup is null)
+            return null;
+
         return StudentsGroupMapper.StudentsGroupToStudentsGroupForWriteDto(studentsGroup);
     }
 

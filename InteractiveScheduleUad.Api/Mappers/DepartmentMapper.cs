@@ -9,4 +9,7 @@ public static partial class DepartmentMapper
 {
     [MapperIgnoreTarget(nameof(Department.Id))]
     public static partial Department DepartmentCreateDtoToDepartment(DepartmentForWriteDto departmentCreateDto);
+
+    [MapperIgnoreTarget(nameof(Department.Id))]
+    public static partial void DepartmentCreateDtoToDepartment(DepartmentForWriteDto departmentCreateDto, Department department);
 }

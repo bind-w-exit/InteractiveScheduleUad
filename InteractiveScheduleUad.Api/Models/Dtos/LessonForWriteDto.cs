@@ -6,9 +6,9 @@ public class LessonForWriteDto
 
     public int SubjectId { get; set; }
 
-    public int TeacherId { get; set; }
+    public int? TeacherId { get; set; }
 
-    public int RoomId { get; set; }
+    public int? RoomId { get; set; }
 
-    public ClassType ClassType { get; set; }
+    public ClassType? ClassType { get; set; }
 }

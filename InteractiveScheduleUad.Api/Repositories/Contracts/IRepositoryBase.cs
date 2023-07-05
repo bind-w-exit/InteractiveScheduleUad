@@ -11,7 +11,7 @@ public interface IRepositoryBase<T> : IDisposable
 
     Task<IEnumerable<T>> GetAllAsync(bool includeNestedObjects = false);
 
-    Task<T?> GetByIdAsync(object id);
+    Task<T?> GetByIdAsync(object? id);
 
     Task InsertAsync(T entity);
 

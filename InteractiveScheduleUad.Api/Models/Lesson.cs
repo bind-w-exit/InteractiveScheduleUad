@@ -6,11 +6,11 @@ public class Lesson
 
     public int Sequence { get; set; }
 
-    public Subject Subject { get; set; }
+    public Subject? Subject { get; set; }
 
-    public Teacher Teacher { get; set; }
+    public Teacher? Teacher { get; set; }
 
-    public Room Room { get; set; }
+    public Room? Room { get; set; }
 
-    public ClassType ClassType { get; set; }
+    public ClassType? ClassType { get; set; }
 }

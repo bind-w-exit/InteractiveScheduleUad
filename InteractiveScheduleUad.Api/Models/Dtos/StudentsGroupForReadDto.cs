@@ -4,5 +4,5 @@ public class StudentsGroupForReadDto
 {
     public int Id { get; set; }
 
-    public string GroupName { get; set; }
+    public required string GroupName { get; set; }
 }

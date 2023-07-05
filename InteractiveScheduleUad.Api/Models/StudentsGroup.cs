@@ -4,7 +4,7 @@ public class StudentsGroup
 {
     public int Id { get; set; }
 
-    public string GroupName { get; set; }
+    public required string GroupName { get; set; }
 
     public WeekSchedule? FirstWeekSchedule { get; set; }
 

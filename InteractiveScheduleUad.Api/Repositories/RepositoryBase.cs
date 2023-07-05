@@ -35,7 +35,7 @@ public class RepositoryBase<T> : IRepositoryBase<T>
             return await query.ToListAsync();
         }
         else
-            return await Context.Set<T>().ToListAsync();     
+            return await Context.Set<T>().ToListAsync();
     }
 
     public virtual async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate)
@@ -43,7 +43,7 @@ public class RepositoryBase<T> : IRepositoryBase<T>
         return await Context.Set<T>().Where(predicate).ToListAsync();
     }
 
-    public virtual async Task<T?> GetByIdAsync(object id)
+    public virtual async Task<T?> GetByIdAsync(object? id)
     {
         return await Context.Set<T>().FindAsync(id);
     }
