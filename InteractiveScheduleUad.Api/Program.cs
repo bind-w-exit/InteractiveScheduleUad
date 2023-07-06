@@ -1,41 +1,71 @@
 using InteractiveScheduleUad.Api;
+using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Repositories;
 using InteractiveScheduleUad.Api.Repositories.Contracts;
 using InteractiveScheduleUad.Api.Services;
 using InteractiveScheduleUad.Api.Services.Contracts;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Npgsql;
+using System.Data;
 using System.Reflection;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddControllers();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
     {
+        Title = "Bindy Bot API",
         Version = "v1",
-        Title = "Interactive Schedule UAD API",
-        Description = "An ASP.NET Core Web API Interactive Schedule UAD",
-        TermsOfService = new Uri("https://example.com/terms"),
         Contact = new OpenApiContact
         {
-            Name = "Example Contact",
-            Url = new Uri("https://example.com/contact")
+            Name = "GitHub",
+            Url = new Uri("https://github.com/bind-w-exit/BindyBot")
         },
-        License = new OpenApiLicense
+        License = new OpenApiLicense()
         {
-            Name = "Example License",
-            Url = new Uri("https://example.com/license")
+            Name = "MIT",
+            Url = new Uri("https://opensource.org/licenses/MIT")
         }
     });
 
-    // using System.Reflection;
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "JSON Web Token based security"
+    });
+
+    options.AddSecurityRequirement(
+        new OpenApiSecurityRequirement()
+        {
+            {
+                new OpenApiSecurityScheme
+                {
+                    Reference = new OpenApiReference
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = "Bearer"
+                    }
+                },
+                Array.Empty<string>()
+            }
+        }
+    );
+
     var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 });
@@ -54,11 +84,35 @@ else
     Environment.Exit(1);
 }
 
+// Authentication
+var issuer = builder.Configuration["JWT_ISSUER"];
+var audience = builder.Configuration["JWT_AUDIENCE"];
+var key = builder.Configuration["JWT_ACCESS_TOKEN_SECRET"];
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = issuer,
+            ValidAudience = audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
+        };
+    });
+
+// Authorization
+AddAuthorizationPolicies(builder.Services);
+
 builder.Services.AddTransient<ISubjectRepository, SubjectRepository>();
 builder.Services.AddTransient<IDepartmentRepository, DepartmentRepository>();
 builder.Services.AddTransient<IStudentsGroupRepository, StudentsGroupRepository>();
 builder.Services.AddTransient<ITeacherRepository, TeacherRepository>();
 builder.Services.AddTransient<IRoomRepository, RoomRepository>();
+builder.Services.AddTransient<IUserRepository, UserRepository>();
+builder.Services.AddTransient<IRevokedTokenRepository, RevokedTokenRepository>();
 
 builder.Services.AddTransient<IDepartmentService, DepartmentService>();
 builder.Services.AddTransient<IStudentsGroupService, StudentsGroupService>();
@@ -66,6 +120,10 @@ builder.Services.AddTransient<IWeekScheduleService, WeekScheduleService>();
 builder.Services.AddTransient<IRoomService, RoomService>();
 builder.Services.AddTransient<ISubjectService, SubjectService>();
 builder.Services.AddTransient<ITeacherService, TeacherService>();
+builder.Services.AddTransient<IAuthService, AuthService>();
+
+builder.Services.AddSingleton<IHashService, HashService>();
+builder.Services.AddSingleton<ITokenService, TokenService>();
 
 var app = builder.Build();
 
@@ -123,4 +181,23 @@ static bool CheckDbConnection(string connectionString)
     }
 
     return false;
+}
+
+static void AddAuthorizationPolicies(IServiceCollection services)
+{
+    var roles = Enum.GetValues(typeof(UserRole)).Cast<UserRole>();
+    foreach (var role in roles)
+    {
+        services.AddAuthorization(options =>
+        {
+            options.AddPolicy(role.ToString(), policy =>
+                policy.RequireRole(role.ToString()));
+        });
+    }
+
+    services.AddAuthorization(options =>
+    {
+        options.AddPolicy("RefreshToken", policy =>
+                policy.RequireRole("RefreshToken"));
+    });
 }

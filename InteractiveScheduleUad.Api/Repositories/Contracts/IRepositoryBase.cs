@@ -17,5 +17,7 @@ public interface IRepositoryBase<T> : IDisposable
 
     Task SaveChangesAsync();
 
+    Task<T?> SingleOrDefaultAsync(Expression<Func<T, bool>> predicate);
+
     void Update(T entity);
 }

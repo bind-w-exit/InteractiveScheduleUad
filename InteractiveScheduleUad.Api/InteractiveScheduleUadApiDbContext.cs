@@ -19,4 +19,8 @@ public class InteractiveScheduleUadApiDbContext : DbContext
     public DbSet<Department> Departments { get; set; }
 
     public DbSet<Room> Rooms { get; set; }
+
+    public DbSet<User> Users { get; set; }
+
+    public DbSet<RevokedToken> RevokedTokens { get; set; }
 }

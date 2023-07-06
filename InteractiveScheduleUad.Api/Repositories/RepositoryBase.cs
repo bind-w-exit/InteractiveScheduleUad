@@ -4,12 +4,12 @@ using System.Linq.Expressions;
 
 namespace InteractiveScheduleUad.Api.Repositories;
 
-public class RepositoryBase<T> : IRepositoryBase<T>
+public abstract class RepositoryBase<T> : IRepositoryBase<T>
     where T : class
 {
     protected DbContext Context { get; private set; }
 
-    protected RepositoryBase(DbContext context)
+    public RepositoryBase(DbContext context)
     {
         Context = context ?? throw new ArgumentNullException(nameof(context));
     }
@@ -41,6 +41,11 @@ public class RepositoryBase<T> : IRepositoryBase<T>
     public virtual async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate)
     {
         return await Context.Set<T>().Where(predicate).ToListAsync();
+    }
+
+    public virtual async Task<T?> SingleOrDefaultAsync(Expression<Func<T, bool>> predicate)
+    {
+        return await Context.Set<T>().SingleOrDefaultAsync(predicate);
     }
 
     public virtual async Task<T?> GetByIdAsync(object? id)
