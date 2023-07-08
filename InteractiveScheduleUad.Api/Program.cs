@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Npgsql;
+using Swashbuckle.AspNetCore.Filters;
 using System.Data;
 using System.Reflection;
 using System.Text;
@@ -25,12 +26,12 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title = "Bindy Bot API",
+        Title = "Interactive Schedule UAD API",
         Version = "v1",
         Contact = new OpenApiContact
         {
             Name = "GitHub",
-            Url = new Uri("https://github.com/bind-w-exit/BindyBot")
+            Url = new Uri("https://github.com/bind-w-exit/InteractiveScheduleUad")
         },
         License = new OpenApiLicense()
         {
@@ -49,22 +50,7 @@ builder.Services.AddSwaggerGen(options =>
         Description = "JSON Web Token based security"
     });
 
-    options.AddSecurityRequirement(
-        new OpenApiSecurityRequirement()
-        {
-            {
-                new OpenApiSecurityScheme
-                {
-                    Reference = new OpenApiReference
-                    {
-                        Type = ReferenceType.SecurityScheme,
-                        Id = "Bearer"
-                    }
-                },
-                Array.Empty<string>()
-            }
-        }
-    );
+    options.OperationFilter<SecurityRequirementsOperationFilter>(true, "Bearer");
 
     var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
