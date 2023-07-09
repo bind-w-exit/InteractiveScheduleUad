@@ -1,5 +1,6 @@
 ﻿using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Services.Contracts;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
@@ -22,6 +23,7 @@ public class SubjectController : ControllerBase
     /// </summary>
     /// <response code="200">Success - Returns an array of subjects</response>
     [HttpGet]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(IEnumerable<Subject>), (int)HttpStatusCode.OK)]
     public async Task<ActionResult<IEnumerable<Subject>>> Get()
     {
@@ -38,6 +40,7 @@ public class SubjectController : ControllerBase
     /// <response code="200">Success - Returns the subject with the specified ID</response>
     /// <response code="404">NotFound - Subject with the specified ID was not found</response>
     [HttpGet("{id}")]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(Subject), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult<Subject>> Get(int id)
@@ -58,6 +61,7 @@ public class SubjectController : ControllerBase
     /// <response code="201">Created - Returns the created subject</response>
     /// <response code="400">BadRequest - One or more validation errors occurred</response>
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     [ProducesResponseType(typeof(Subject), (int)HttpStatusCode.Created)]
     public async Task<ActionResult<Subject>> Post([FromBody] string subjectName)
     {
@@ -76,6 +80,7 @@ public class SubjectController : ControllerBase
     /// <response code="400">BadRequest - One or more validation errors occurred</response>
     /// <response code="404">NotFound - Subject with the specified ID was not found</response>
     [HttpPut("{id}")]
+    [Authorize(Roles = "Admin")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult> Put(int id, [FromBody] string newSubjectName)
@@ -96,6 +101,7 @@ public class SubjectController : ControllerBase
     /// <response code="200">Success - Successfully deleted</response>
     /// <response code="404">NotFound - Subject with the specified ID was not found</response>
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult> Delete(int id)

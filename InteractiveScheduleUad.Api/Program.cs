@@ -17,7 +17,6 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -113,17 +112,19 @@ builder.Services.AddSingleton<ITokenService, TokenService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+using var scope = app.Services.CreateScope();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 
-    using var scope = app.Services.CreateScope();
     var apiContext = scope.ServiceProvider.GetRequiredService<InteractiveScheduleUadApiDbContext>();
     apiContext.Database.EnsureDeleted();
     apiContext.Database.EnsureCreated();
 }
+
+await CreateFirstUser(scope.ServiceProvider.GetRequiredService<IAuthService>(), scope.ServiceProvider.GetRequiredService<IUserRepository>(), app.Configuration);
 
 app.UseHttpsRedirection();
 
@@ -186,4 +187,13 @@ static void AddAuthorizationPolicies(IServiceCollection services)
         options.AddPolicy("RefreshToken", policy =>
                 policy.RequireRole("RefreshToken"));
     });
+}
+
+static async Task CreateFirstUser(IAuthService authService, IUserRepository userRepository, IConfiguration configuration)
+{
+    var admin = await userRepository.SingleOrDefaultAsync(user => user.UserRole == UserRole.Admin);
+    if (admin is null)
+    {
+        authService.Register(new() { Username = configuration["ADMIN_USERNAME"], Password = configuration["ADMIN_PASSWORD"] });
+    }
 }

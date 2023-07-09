@@ -1,5 +1,6 @@
 ﻿using InteractiveScheduleUad.Api.Models.Dtos;
 using InteractiveScheduleUad.Api.Services.Contracts;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
@@ -24,6 +25,7 @@ public class ScheduleController : ControllerBase
     /// <response code="200">Success - Returns the two weeks schedule with the specified students group ID</response>
     /// <response code="404">NotFound - Students group with the specified ID was not found</response>
     [HttpGet("{studentsGroupId}")]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(StudentsGroupForWriteDto), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult<StudentsGroupForWriteDto>> Get(int studentsGroupId)
@@ -47,6 +49,7 @@ public class ScheduleController : ControllerBase
     /// <response code="400">BadRequest - One or more validation errors occurred</response>
     /// <response code="404">NotFound - Students group with the specified ID was not found</response>
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     [ProducesResponseType(typeof(WeekScheduleForReadDto), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult<WeekScheduleForReadDto>> Post([FromQuery] int studentsGroupId, [FromBody] WeekScheduleForWriteDto weekSchedule, [FromQuery] bool isSecondWeek = false)
@@ -68,6 +71,7 @@ public class ScheduleController : ControllerBase
     /// <response code="200">Success - Successfully deleted</response>
     /// <response code="404">NotFound - Students group with the specified ID was not found</response>
     [HttpDelete]
+    [Authorize(Roles = "Admin")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult> Delete([FromQuery] int studentsGroupId, [FromQuery] bool isSecondWeek = false)

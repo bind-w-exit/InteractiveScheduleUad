@@ -1,6 +1,7 @@
 ﻿using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Models.Dtos;
 using InteractiveScheduleUad.Api.Services.Contracts;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
@@ -23,6 +24,7 @@ public class TeacherController : ControllerBase
     /// </summary>
     /// <response code="200">Success - Returns an array of teachers</response>
     [HttpGet]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(IEnumerable<Teacher>), (int)HttpStatusCode.OK)]
     public async Task<ActionResult<IEnumerable<Teacher>>> Get()
     {
@@ -39,6 +41,7 @@ public class TeacherController : ControllerBase
     /// <response code="200">Success - Returns the teacher with the specified ID</response>
     /// <response code="404">NotFound - Teacher with the specified ID was not found</response>
     [HttpGet("{id}")]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(Teacher), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult<Teacher>> Get(int id)
@@ -59,6 +62,7 @@ public class TeacherController : ControllerBase
     /// <response code="201">Created - Returns the created teacher</response>
     /// <response code="400">BadRequest - One or more validation errors occurred</response>
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     [ProducesResponseType(typeof(Teacher), (int)HttpStatusCode.Created)]
     public async Task<ActionResult<Teacher>> Post([FromBody] TeacherForWriteDto teacher)
     {
@@ -77,6 +81,7 @@ public class TeacherController : ControllerBase
     /// <response code="400">BadRequest - One or more validation errors occurred</response>
     /// <response code="404">NotFound - Teacher with the specified ID was not found</response>
     [HttpPut("{id}")]
+    [Authorize(Roles = "Admin")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult> Put(int id, [FromBody] TeacherForWriteDto newTeacher)
@@ -97,6 +102,7 @@ public class TeacherController : ControllerBase
     /// <response code="200">Success - Successfully deleted</response>
     /// <response code="404">NotFound - Teacher with the specified ID was not found</response>
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult> Delete(int id)

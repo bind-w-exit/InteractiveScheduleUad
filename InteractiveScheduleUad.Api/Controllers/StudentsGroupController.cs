@@ -1,5 +1,6 @@
 ﻿using InteractiveScheduleUad.Api.Models.Dtos;
 using InteractiveScheduleUad.Api.Services.Contracts;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
@@ -22,6 +23,7 @@ public class StudentsGroupController : ControllerBase
     /// </summary>
     /// <response code="200">Success - Returns an array of students groups</response>
     [HttpGet]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(IEnumerable<StudentsGroupForReadDto>), (int)HttpStatusCode.OK)]
     public async Task<ActionResult<IEnumerable<StudentsGroupForReadDto>>> Get()
     {
@@ -38,6 +40,7 @@ public class StudentsGroupController : ControllerBase
     /// <response code="200">Success - Returns the students group with the specified ID</response>
     /// <response code="404">NotFound - Students group with the specified ID was not found</response>
     [HttpGet("{id}")]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(StudentsGroupForReadDto), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult<StudentsGroupForReadDto>> Get(int id)
@@ -58,6 +61,7 @@ public class StudentsGroupController : ControllerBase
     /// <response code="201">Created - Returns the created students group</response>
     /// <response code="400">BadRequest - One or more validation errors occurred</response>
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     [ProducesResponseType(typeof(StudentsGroupForReadDto), (int)HttpStatusCode.Created)]
     public async Task<ActionResult<StudentsGroupForReadDto>> Post([FromBody] string groupName)
     {
@@ -76,6 +80,7 @@ public class StudentsGroupController : ControllerBase
     /// <response code="400">BadRequest - One or more validation errors occurred</response>
     /// <response code="404">NotFound - Students group with the specified ID was not found</response>
     [HttpPut("{id}")]
+    [Authorize(Roles = "Admin")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult> Put(int id, [FromBody] string newGroupName)
@@ -96,6 +101,7 @@ public class StudentsGroupController : ControllerBase
     /// <response code="200">Success - Successfully deleted</response>
     /// <response code="404">NotFound - Students group with the specified ID was not found</response>
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult> Delete(int id)

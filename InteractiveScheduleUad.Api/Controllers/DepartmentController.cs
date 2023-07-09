@@ -1,6 +1,7 @@
 ﻿using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Models.Dtos;
 using InteractiveScheduleUad.Api.Services.Contracts;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
@@ -23,6 +24,7 @@ public class DepartmentController : ControllerBase
     /// </summary>
     /// <response code="200">Success - Returns an array of departments</response>
     [HttpGet]
+    [AllowAnonymous]
     [Produces("application/json")]
     [ProducesResponseType(typeof(IEnumerable<Department>), (int)HttpStatusCode.OK)]
     public async Task<ActionResult<IEnumerable<Department>>> Get()
@@ -40,6 +42,7 @@ public class DepartmentController : ControllerBase
     /// <response code="200">Success - Returns the department with the specified ID</response>
     /// <response code="404">NotFound - Department with the specified ID was not found</response>
     [HttpGet("{id}")]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(Department), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult<Department>> Get(int id)
@@ -60,6 +63,7 @@ public class DepartmentController : ControllerBase
     /// <response code="201">Created - Returns the created department</response>
     /// <response code="400">BadRequest - One or more validation errors occurred</response>
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     [ProducesResponseType(typeof(Department), (int)HttpStatusCode.Created)]
     public async Task<ActionResult<Department>> Post([FromBody] DepartmentForWriteDto department)
     {
@@ -78,6 +82,7 @@ public class DepartmentController : ControllerBase
     /// <response code="400">BadRequest - One or more validation errors occurred</response>
     /// <response code="404">NotFound - Department with the specified ID was not found</response>
     [HttpPut("{id}")]
+    [Authorize(Roles = "Admin")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult> Put(int id, [FromBody] DepartmentForWriteDto newDepartment)
@@ -98,6 +103,7 @@ public class DepartmentController : ControllerBase
     /// <response code="200">Success - Successfully deleted</response>
     /// <response code="404">NotFound - Department with the specified ID was not found</response>
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult> Delete(int id)
