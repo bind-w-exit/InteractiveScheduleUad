@@ -9,6 +9,8 @@
     <DockerServiceName>api</DockerServiceName>
   </PropertyGroup>
   <ItemGroup>
+    <None Include=".devcontainer\devcontainer.json" />
+    <None Include=".devcontainer\docker-compose.yml" />
     <None Include=".env" />
     <None Include=".env.example" />
     <None Include="docker-compose.override.yml">
@@ -16,5 +18,8 @@
     </None>
     <None Include="docker-compose.yml" />
     <None Include=".dockerignore" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove=".devcontainer - Copy\**" />
   </ItemGroup>
 </Project>

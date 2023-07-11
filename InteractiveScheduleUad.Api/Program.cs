@@ -114,11 +114,11 @@ var app = builder.Build();
 
 using var scope = app.Services.CreateScope();
 
+app.UseSwagger();
+app.UseSwaggerUI();
+
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-
     var apiContext = scope.ServiceProvider.GetRequiredService<InteractiveScheduleUadApiDbContext>();
     apiContext.Database.EnsureDeleted();
     apiContext.Database.EnsureCreated();

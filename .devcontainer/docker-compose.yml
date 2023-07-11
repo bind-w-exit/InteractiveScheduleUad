@@ -1,0 +1,39 @@
+version: '3.4'
+
+services:
+  api:
+    container_name: InteractiveScheduleUadApi
+    build:
+      context: ../InteractiveScheduleUad.Api
+      dockerfile: ../InteractiveScheduleUad.Api/Dockerfile
+    depends_on:
+      - db
+    networks:
+      - mynetwork
+    environment:
+      - DB_NAME=mydb
+      - DB_USER=admin
+      - DB_PASS=password
+      - DB_HOST=db
+      - JWT_ISSUER=https://127.0.0.1
+      - JWT_AUDIENCE=https://127.0.0.1
+      - JWT_ACCESS_TOKEN_SECRET=9viitm5w333zg1hlg42rvphj7m1522
+      - ADMIN_USERNAME = api_admin
+      - ADMIN_PASSWORD = api_password
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+    ports:
+      - "8080:80"
+  db:
+    image: postgres:15-alpine
+    container_name: ISUadPostgresDb
+    environment:
+      POSTGRES_DB: mydb
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:
+    driver: bridge
