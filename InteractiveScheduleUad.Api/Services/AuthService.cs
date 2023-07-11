@@ -28,7 +28,7 @@ public class AuthService : IAuthService
         var userFromDb = await _userRepository.SingleOrDefaultAsync(u => u.Username == userForRegisterDto.Username);
 
         if (userFromDb is not null)
-            return Result<UserForReadDto>.Failure(new InvalidOperationException("Username already exist"));
+            return new InvalidOperationException("Username already exist");
 
         _hashService.CreatePasswordHash(userForRegisterDto.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
@@ -43,7 +43,7 @@ public class AuthService : IAuthService
         await _userRepository.InsertAsync(user);
         await _userRepository.SaveChangesAsync();
 
-        return Result<UserForReadDto>.Success(UserMapper.UserToUserForReadDto(user));
+        return UserMapper.UserToUserForReadDto(user);
     }
 
     public async Task<bool> DeleteAsync(string username)
@@ -97,14 +97,14 @@ public class AuthService : IAuthService
         var userFromDb = await _userRepository.SingleOrDefaultAsync(u => u.Username == userForLoginDto.UserName);
 
         if (userFromDb is null)
-            return Result<AuthenticatedResponse>.Failure(new KeyNotFoundException("User not found"));
+            return new KeyNotFoundException("User not found");
 
         if (!_hashService.VerifyPasswordHash(userForLoginDto.Password, userFromDb.PasswordHash, userFromDb.PasswordSalt))
-            return Result<AuthenticatedResponse>.Failure(new InvalidOperationException("Wrong password"));
+            return new InvalidOperationException("Wrong password");
 
         AuthenticatedResponse response = _tokenService.GenerateAuthenticatedResponse(userFromDb);
 
-        return Result<AuthenticatedResponse>.Success(response);
+        return response;
     }
 
     // TODO: Change validation checks order
@@ -114,27 +114,27 @@ public class AuthService : IAuthService
         var jtiString = claims.FindFirstValue(JwtRegisteredClaimNames.Jti);
         if (string.IsNullOrEmpty(jtiString) || !Guid.TryParse(jtiString, out var jti))
         {
-            return Result<bool>.Failure(new FormatException("Invalid JTI"));
+            return new FormatException("Invalid JTI");
         }
 
         // Validation 2: Check if the token is already in the blacklist
         var revokedToken = await _revokedTokenRepository.SingleOrDefaultAsync(t => t.Jti == jti);
         if (revokedToken is not null)
         {
-            return Result<bool>.Success(true);
+            return true;
         }
 
         // Validation 3: Ensure that the token expiry time is valid
         var tokenExpiresString = claims.FindFirstValue(JwtRegisteredClaimNames.Exp);
         if (string.IsNullOrEmpty(tokenExpiresString) || !long.TryParse(tokenExpiresString, out long tokenExpiresSeconds))
         {
-            return Result<bool>.Failure(new FormatException("Invalid Exp"));
+            return new FormatException("Invalid Exp");
         }
 
         var tokenExpires = DateTimeOffset.FromUnixTimeSeconds(tokenExpiresSeconds);
         if (tokenExpires <= DateTimeOffset.UtcNow)
         {
-            return Result<bool>.Failure(new InvalidOperationException("Token has expired"));
+            return new InvalidOperationException("Token has expired");
         }
 
         // Add tokens to the blacklist
@@ -145,7 +145,7 @@ public class AuthService : IAuthService
         });
         await _revokedTokenRepository.SaveChangesAsync();
 
-        return Result<bool>.Success(true);
+        return true;
     }
 
     // TODO: Check functionality
@@ -155,7 +155,7 @@ public class AuthService : IAuthService
         var jtiString = claims.FindFirstValue(JwtRegisteredClaimNames.Jti);
         if (string.IsNullOrEmpty(jtiString) || !Guid.TryParse(jtiString, out var jti))
         {
-            return Result<AuthenticatedResponse>.Failure(new FormatException("Invalid JTI"));
+            return new FormatException("Invalid JTI");
         }
 
         // TODO: Move to the AuthMiddleware
@@ -163,14 +163,14 @@ public class AuthService : IAuthService
         var revokedToken = await _revokedTokenRepository.SingleOrDefaultAsync(t => t.Jti == jti);
         if (revokedToken != null)
         {
-            return Result<AuthenticatedResponse>.Failure(new InvalidOperationException("Token has been used"));
+            return new InvalidOperationException("Token has been used");
         }
 
         // Validation 3: Ensure that the token expiry time is valid
         var tokenExpiresString = claims.FindFirstValue(JwtRegisteredClaimNames.Exp);
         if (string.IsNullOrEmpty(tokenExpiresString) || !long.TryParse(tokenExpiresString, out long tokenExpiresSeconds))
         {
-            return Result<AuthenticatedResponse>.Failure(new FormatException("Invalid Exp"));
+            return new FormatException("Invalid Exp");
         }
         var tokenExpires = DateTimeOffset.FromUnixTimeSeconds(tokenExpiresSeconds);
 
@@ -178,13 +178,13 @@ public class AuthService : IAuthService
         var userId = claims.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userId) || !int.TryParse(userId, out int userIdValue))
         {
-            return Result<AuthenticatedResponse>.Failure(new FormatException("Invalid user ID"));
+            return new FormatException("Invalid user ID");
         }
 
         var user = await _userRepository.GetByIdAsync(userIdValue);
         if (user == null)
         {
-            return Result<AuthenticatedResponse>.Failure(new KeyNotFoundException("User not found"));
+            return new KeyNotFoundException("User not found");
         }
 
         // Add old tokens to the blacklist
@@ -196,6 +196,6 @@ public class AuthService : IAuthService
         await _revokedTokenRepository.SaveChangesAsync();
 
         AuthenticatedResponse response = _tokenService.GenerateAuthenticatedResponse(user);
-        return Result<AuthenticatedResponse>.Success(response);
+        return response;
     }
 }
