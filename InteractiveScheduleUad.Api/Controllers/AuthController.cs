@@ -19,6 +19,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("Register")]
+    [Authorize(Roles = "Admin")]
     [ProducesResponseType(typeof(UserForReadDto), (int)HttpStatusCode.OK)]
     public async Task<ActionResult<UserForReadDto>> Register(UserForRegisterDto userForRegisterDto)
     {
