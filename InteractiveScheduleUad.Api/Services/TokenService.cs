@@ -93,4 +93,12 @@ public class TokenService : ITokenService
         var tokenString = new JwtSecurityTokenHandler().WriteToken(tokeOptions);
         return tokenString;
     }
+
+    public string GenerateRefreshToken(User user, Guid pairJti)
+    {
+        var accessTokenExpires = DateTime.UtcNow.AddMinutes(5);
+        var accessTokenClaims = GenerateAccessTokenClaims(user, pairJti);
+
+        return GenerateToken(accessTokenClaims, accessTokenExpires);
+    }
 }

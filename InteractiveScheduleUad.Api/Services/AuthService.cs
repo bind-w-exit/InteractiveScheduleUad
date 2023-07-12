@@ -149,7 +149,7 @@ public class AuthService : IAuthService
     }
 
     // TODO: Check functionality
-    public async Task<Result<AuthenticatedResponse>> RefreshToken(ClaimsPrincipal claims)
+    public async Task<Result<string>> RefreshToken(ClaimsPrincipal claims)
     {
         // Validation 1: Ensure that the JTI is valid
         var jtiString = claims.FindFirstValue(JwtRegisteredClaimNames.Jti);
@@ -187,15 +187,6 @@ public class AuthService : IAuthService
             return new KeyNotFoundException("User not found");
         }
 
-        // Add old tokens to the blacklist
-        await _revokedTokenRepository.InsertAsync(new RevokedToken
-        {
-            Jti = jti,
-            ExpiryDate = tokenExpires.UtcDateTime
-        });
-        await _revokedTokenRepository.SaveChangesAsync();
-
-        AuthenticatedResponse response = _tokenService.GenerateAuthenticatedResponse(user);
-        return response;
+        return _tokenService.GenerateRefreshToken(user, jti);
     }
 }

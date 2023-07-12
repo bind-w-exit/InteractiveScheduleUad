@@ -82,9 +82,9 @@ public class AuthController : ControllerBase
 
     [HttpGet("RefreshToken")]
     [Authorize(Roles = "RefreshToken")]
-    [ProducesResponseType(typeof(AuthenticatedResponse), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.BadRequest)]
-    public async Task<ActionResult<AuthenticatedResponse>> RefreshToken()
+    public async Task<ActionResult<string>> RefreshToken()
     {
         var result = await _authService.RefreshToken(User);
 
