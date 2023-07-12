@@ -48,6 +48,11 @@ public abstract class RepositoryBase<T> : IRepositoryBase<T>
         return await Context.Set<T>().SingleOrDefaultAsync(predicate);
     }
 
+    public virtual async Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate)
+    {
+        return await Context.Set<T>().FirstOrDefaultAsync(predicate);
+    }
+
     public virtual async Task<T?> GetByIdAsync(object? id)
     {
         return await Context.Set<T>().FindAsync(id);

@@ -191,7 +191,7 @@ static void AddAuthorizationPolicies(IServiceCollection services)
 
 static async Task CreateFirstUser(IAuthService authService, IUserRepository userRepository, IConfiguration configuration)
 {
-    var admin = await userRepository.SingleOrDefaultAsync(user => user.UserRole == UserRole.Admin);
+    var admin = await userRepository.FirstOrDefaultAsync(user => user.UserRole == UserRole.Admin);
     if (admin is null)
     {
         authService.Register(new() { Username = configuration["ADMIN_USERNAME"], Password = configuration["ADMIN_PASSWORD"] });

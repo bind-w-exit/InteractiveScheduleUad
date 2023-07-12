@@ -9,6 +9,8 @@ public interface IRepositoryBase<T> : IDisposable
 
     Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate);
 
+    Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate);
+
     Task<IEnumerable<T>> GetAllAsync(bool includeNestedObjects = false);
 
     Task<T?> GetByIdAsync(object? id);
