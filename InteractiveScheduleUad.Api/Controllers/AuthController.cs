@@ -19,9 +19,6 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("Register")]
-    // TODO: Add authorize rule for Register endpoint
-    //[Authorize(Roles = "Admin,User")]
-    [AllowAnonymous]
     [ProducesResponseType(typeof(UserForReadDto), (int)HttpStatusCode.OK)]
     public async Task<ActionResult<UserForReadDto>> Register(UserForRegisterDto userForRegisterDto)
     {
