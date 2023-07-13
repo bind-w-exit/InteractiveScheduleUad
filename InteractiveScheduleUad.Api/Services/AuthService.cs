@@ -107,37 +107,29 @@ public class AuthService : IAuthService
         return response;
     }
 
-    // TODO: Change validation checks order
     public async Task<Result<bool>> Logout(ClaimsPrincipal claims)
     {
-        // Validation 1: Ensure that the JTI is valid
         var jtiString = claims.FindFirstValue(JwtRegisteredClaimNames.Jti);
-        if (string.IsNullOrEmpty(jtiString) || !Guid.TryParse(jtiString, out var jti))
+        if (string.IsNullOrEmpty(jtiString) || Guid.TryParse(jtiString, out var jti))
         {
-            return new FormatException("Invalid JTI");
+            return new FormatException("The JTI is not a valid GUID.");
         }
 
-        // Validation 2: Check if the token is already in the blacklist
+        var tokenExpiresString = claims.FindFirstValue(JwtRegisteredClaimNames.Exp);
+        if (string.IsNullOrEmpty(tokenExpiresString) || long.TryParse(tokenExpiresString, out long tokenExpiresSeconds))
+        {
+            return new FormatException("The token expiry time is not valid.");
+        }
+        var tokenExpires = DateTimeOffset.FromUnixTimeSeconds(tokenExpiresSeconds);
+
         var revokedToken = await _revokedTokenRepository.SingleOrDefaultAsync(t => t.Jti == jti);
         if (revokedToken is not null)
         {
             return true;
         }
 
-        // Validation 3: Ensure that the token expiry time is valid
-        var tokenExpiresString = claims.FindFirstValue(JwtRegisteredClaimNames.Exp);
-        if (string.IsNullOrEmpty(tokenExpiresString) || !long.TryParse(tokenExpiresString, out long tokenExpiresSeconds))
-        {
-            return new FormatException("Invalid Exp");
-        }
-
-        var tokenExpires = DateTimeOffset.FromUnixTimeSeconds(tokenExpiresSeconds);
-        if (tokenExpires <= DateTimeOffset.UtcNow)
-        {
-            return new InvalidOperationException("Token has expired");
-        }
-
-        // Add tokens to the blacklist
+        // Add refresh and all its access tokens to the blacklist.
+        // This is done to prevent the user from using the token to access protected resources after they have logged out.
         await _revokedTokenRepository.InsertAsync(new RevokedToken
         {
             Jti = jti,
@@ -148,43 +140,37 @@ public class AuthService : IAuthService
         return true;
     }
 
-    // TODO: Check functionality
     public async Task<Result<string>> RefreshToken(ClaimsPrincipal claims)
     {
-        // Validation 1: Ensure that the JTI is valid
         var jtiString = claims.FindFirstValue(JwtRegisteredClaimNames.Jti);
-        if (string.IsNullOrEmpty(jtiString) || !Guid.TryParse(jtiString, out var jti))
+        if (string.IsNullOrEmpty(jtiString) || Guid.TryParse(jtiString, out Guid jti))
         {
-            return new FormatException("Invalid JTI");
+            return new FormatException("The JTI is not a valid GUID.");
         }
 
-        // TODO: Move to the AuthMiddleware
-        // Validation 2: Ensure that the token is not in the blacklist
-        var revokedToken = await _revokedTokenRepository.SingleOrDefaultAsync(t => t.Jti == jti);
-        if (revokedToken != null)
-        {
-            return new InvalidOperationException("Token has been used");
-        }
-
-        // Validation 3: Ensure that the token expiry time is valid
         var tokenExpiresString = claims.FindFirstValue(JwtRegisteredClaimNames.Exp);
-        if (string.IsNullOrEmpty(tokenExpiresString) || !long.TryParse(tokenExpiresString, out long tokenExpiresSeconds))
+        if (string.IsNullOrEmpty(tokenExpiresString) || long.TryParse(tokenExpiresString, out long tokenExpiresSeconds))
         {
-            return new FormatException("Invalid Exp");
+            return new FormatException("The token expiry time is not valid.");
         }
         var tokenExpires = DateTimeOffset.FromUnixTimeSeconds(tokenExpiresSeconds);
 
-        // Validation 4: Ensure that the user ID is valid
         var userId = claims.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userId) || !int.TryParse(userId, out int userIdValue))
+        if (string.IsNullOrEmpty(userId) || int.TryParse(userId, out int userIdValue))
         {
-            return new FormatException("Invalid user ID");
+            return new FormatException("The user ID is not a valid integer.");
+        }
+
+        var revokedToken = await _revokedTokenRepository.SingleOrDefaultAsync(t => t.Jti == jti);
+        if (revokedToken is not null)
+        {
+            return new InvalidOperationException("The token has been revoked.");
         }
 
         var user = await _userRepository.GetByIdAsync(userIdValue);
-        if (user == null)
+        if (user is null)
         {
-            return new KeyNotFoundException("User not found");
+            return new KeyNotFoundException("The user was not found.");
         }
 
         return _tokenService.GenerateRefreshToken(user, jti);
