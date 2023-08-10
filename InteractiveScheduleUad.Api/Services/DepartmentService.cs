@@ -17,7 +17,7 @@ public class DepartmentService : IDepartmentService
 
     public async Task<Department> CreateAsync(DepartmentForWriteDto departmentCreateDto)
     {
-        Department department = DepartmentMapper.DepartmentCreateDtoToDepartment(departmentCreateDto);
+        Department department = DepartmentMapper.DepartmentForWriteDtoToDepartment(departmentCreateDto);
 
         await _departmentRepository.InsertAsync(department);
         await _departmentRepository.SaveChangesAsync();
@@ -52,7 +52,7 @@ public class DepartmentService : IDepartmentService
         var departmentFromDb = await _departmentRepository.GetByIdAsync(id);
         if (departmentFromDb is not null)
         {
-            DepartmentMapper.DepartmentCreateDtoToDepartment(departmentCreateDto, departmentFromDb);
+            DepartmentMapper.DepartmentForWriteDtoToDepartment(departmentCreateDto, departmentFromDb);
 
             _departmentRepository.Update(departmentFromDb);
             await _departmentRepository.SaveChangesAsync();

@@ -8,8 +8,8 @@ namespace InteractiveScheduleUad.Api.Mappers;
 public static partial class DepartmentMapper
 {
     [MapperIgnoreTarget(nameof(Department.Id))]
-    public static partial Department DepartmentCreateDtoToDepartment(DepartmentForWriteDto departmentCreateDto);
+    public static partial Department DepartmentForWriteDtoToDepartment(DepartmentForWriteDto departmentForWriteDto);
 
     [MapperIgnoreTarget(nameof(Department.Id))]
-    public static partial void DepartmentCreateDtoToDepartment(DepartmentForWriteDto departmentCreateDto, Department department);
+    public static partial void DepartmentForWriteDtoToDepartment(DepartmentForWriteDto departmentForWriteDto, Department department);
 }

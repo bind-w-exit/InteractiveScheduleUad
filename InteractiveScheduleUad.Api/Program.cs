@@ -57,6 +57,7 @@ builder.Services.AddSwaggerGen(options =>
 
 // Database
 var connectionString = GetDbConnectionString(builder.Configuration);
+//var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 if (CheckDbConnection(connectionString))
 {
@@ -92,6 +93,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 // Authorization
 AddAuthorizationPolicies(builder.Services);
 
+// TODO: Change to AddScoped
 builder.Services.AddTransient<ISubjectRepository, SubjectRepository>();
 builder.Services.AddTransient<IDepartmentRepository, DepartmentRepository>();
 builder.Services.AddTransient<IStudentsGroupRepository, StudentsGroupRepository>();
@@ -99,6 +101,8 @@ builder.Services.AddTransient<ITeacherRepository, TeacherRepository>();
 builder.Services.AddTransient<IRoomRepository, RoomRepository>();
 builder.Services.AddTransient<IUserRepository, UserRepository>();
 builder.Services.AddTransient<IRevokedTokenRepository, RevokedTokenRepository>();
+builder.Services.AddTransient<IAuthorRepository, AuthorRepository>();
+builder.Services.AddTransient<IArticleRepository, ArticleRepository>();
 
 builder.Services.AddTransient<IDepartmentService, DepartmentService>();
 builder.Services.AddTransient<IStudentsGroupService, StudentsGroupService>();
@@ -107,6 +111,8 @@ builder.Services.AddTransient<IRoomService, RoomService>();
 builder.Services.AddTransient<ISubjectService, SubjectService>();
 builder.Services.AddTransient<ITeacherService, TeacherService>();
 builder.Services.AddTransient<IAuthService, AuthService>();
+builder.Services.AddTransient<IAuthorService, AuthorService>();
+builder.Services.AddTransient<IArticleService, ArticleService>();
 
 builder.Services.AddSingleton<IHashService, HashService>();
 builder.Services.AddSingleton<ITokenService, TokenService>();
@@ -121,11 +127,10 @@ app.UseSwaggerUI();
 if (app.Environment.IsDevelopment())
 {
     var apiContext = scope.ServiceProvider.GetRequiredService<InteractiveScheduleUadApiDbContext>();
-    apiContext.Database.EnsureDeleted();
-    apiContext.Database.EnsureCreated();
+    apiContext.Database.Migrate();
 }
 
-await CreateFirstUser(scope.ServiceProvider.GetRequiredService<IAuthService>(), scope.ServiceProvider.GetRequiredService<IUserRepository>(), app.Configuration);
+await CreateFirstUserIfEmpty(scope.ServiceProvider.GetRequiredService<IAuthService>(), scope.ServiceProvider.GetRequiredService<IUserRepository>(), app.Configuration);
 
 app.UseHttpsRedirection();
 
@@ -190,7 +195,7 @@ static void AddAuthorizationPolicies(IServiceCollection services)
     });
 }
 
-static async Task CreateFirstUser(IAuthService authService, IUserRepository userRepository, IConfiguration configuration)
+static async Task CreateFirstUserIfEmpty(IAuthService authService, IUserRepository userRepository, IConfiguration configuration)
 {
     var admin = await userRepository.FirstOrDefaultAsync(user => user.UserRole == UserRole.Admin);
     if (admin is null)
