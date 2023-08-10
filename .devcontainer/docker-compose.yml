@@ -5,7 +5,7 @@ services:
     container_name: InteractiveScheduleUadApi
     build:
       context: ../InteractiveScheduleUad.Api
-      dockerfile: ../InteractiveScheduleUad.Api/Dockerfile
+      dockerfile: Dockerfile
     depends_on:
       - db
     networks:

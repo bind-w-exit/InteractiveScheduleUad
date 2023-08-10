@@ -19,7 +19,4 @@
     <None Include="docker-compose.yml" />
     <None Include=".dockerignore" />
   </ItemGroup>
-  <ItemGroup>
-    <None Remove=".devcontainer - Copy\**" />
-  </ItemGroup>
 </Project>

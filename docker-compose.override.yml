@@ -13,4 +13,4 @@ services:
       - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
   db:
     ports:
-      - 5432:5432  # Maps host port 5432 to container port 5432
+      - 5432:5432

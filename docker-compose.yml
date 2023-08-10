@@ -4,8 +4,8 @@ services:
   api:
     container_name: InteractiveScheduleUadApi
     build:
-      context: .
-      dockerfile: InteractiveScheduleUad.Api/Dockerfile
+        context: ./InteractiveScheduleUad.Api
+        dockerfile: Dockerfile
     env_file:
       - .env
     depends_on:
