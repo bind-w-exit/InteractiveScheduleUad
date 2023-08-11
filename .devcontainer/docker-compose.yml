@@ -23,7 +23,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:80
     ports:
-      - "8080:80"
+      - "80:80"
   db:
     image: postgres:15-alpine
     container_name: ISUadPostgresDb
