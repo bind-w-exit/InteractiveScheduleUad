@@ -1,9 +1,11 @@
+using FluentValidation;
 using InteractiveScheduleUad.Api;
 using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Repositories;
 using InteractiveScheduleUad.Api.Repositories.Contracts;
 using InteractiveScheduleUad.Api.Services;
 using InteractiveScheduleUad.Api.Services.Contracts;
+using InteractiveScheduleUad.Api.Validators;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -17,7 +19,11 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    // TODO: Will this add to performance? Because then FluentValidation will check this again
+    options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
+});
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -92,6 +98,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 // Authorization
 AddAuthorizationPolicies(builder.Services);
+
+// Validation
+builder.Services.AddValidatorsFromAssemblyContaining<RoomForWriteDtoValidator>();
 
 // TODO: Change to AddScoped
 builder.Services.AddTransient<ISubjectRepository, SubjectRepository>();

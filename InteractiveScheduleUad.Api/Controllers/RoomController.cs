@@ -1,4 +1,6 @@
-﻿using InteractiveScheduleUad.Api.Models;
+﻿using InteractiveScheduleUad.Api.Extensions;
+using InteractiveScheduleUad.Api.Models;
+using InteractiveScheduleUad.Api.Models.Dtos;
 using InteractiveScheduleUad.Api.Services.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -57,17 +59,21 @@ public class RoomController : ControllerBase
     /// <summary>
     /// Creates a new room
     /// </summary>
-    /// <param name="roomName">The room name</param>
+    /// <param name="roomForWriteDto">The room name</param>
     /// <response code="201">Created - Returns the created room</response>
     /// <response code="400">BadRequest - One or more validation errors occurred</response>
     [HttpPost]
     [Authorize(Roles = "Admin")]
     [ProducesResponseType(typeof(Room), (int)HttpStatusCode.Created)]
-    public async Task<ActionResult<Room>> Post([FromBody] string roomName)
+    public async Task<ActionResult<Room>> Post([FromBody] RoomForWriteDto roomForWriteDto)
     {
-        Room room = await _roomService.CreateAsync(roomName);
+        var res = await _roomService.CreateAsync(roomForWriteDto);
 
-        return CreatedAtAction(nameof(Get), new { id = room.Id }, room);
+        if (res.IsFailed)
+        {
+            return res.Errors.FirstOrDefault().ToObjectResult();
+        }
+        return CreatedAtAction(nameof(Get), new { id = res.Value.Id }, res.Value);
     }
 
     // PUT api/<RoomController>/5
@@ -75,7 +81,7 @@ public class RoomController : ControllerBase
     /// Updates an existing room
     /// </summary>
     /// <param name="id">The ID of the room to update</param>
-    /// <param name="newRoomName">The updated room name</param>
+    /// <param name="roomForWriteDto">The updated room name</param>
     /// <response code="200">Success - Successfully updated</response>
     /// <response code="400">BadRequest - One or more validation errors occurred</response>
     /// <response code="404">NotFound - Room with the specified ID was not found</response>
@@ -83,9 +89,9 @@ public class RoomController : ControllerBase
     [Authorize(Roles = "Admin")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-    public async Task<ActionResult> Put(int id, [FromBody] string newRoomName)
+    public async Task<ActionResult> Put(int id, [FromBody] RoomForWriteDto roomForWriteDto)
     {
-        bool success = await _roomService.UpdateAsync(id, newRoomName);
+        bool success = await _roomService.UpdateAsync(id, roomForWriteDto);
 
         if (!success)
             return NotFound("Room with the specified ID was not found");

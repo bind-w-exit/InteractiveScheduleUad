@@ -1,4 +1,8 @@
-﻿using InteractiveScheduleUad.Api.Models;
+﻿using FluentResults;
+using FluentValidation;
+using InteractiveScheduleUad.Api.Errors;
+using InteractiveScheduleUad.Api.Models;
+using InteractiveScheduleUad.Api.Models.Dtos;
 using InteractiveScheduleUad.Api.Repositories.Contracts;
 using InteractiveScheduleUad.Api.Services.Contracts;
 
@@ -7,15 +11,34 @@ namespace InteractiveScheduleUad.Api.Services;
 public class RoomService : IRoomService
 {
     private readonly IRoomRepository _roomRepository;
+    private readonly IValidator<RoomForWriteDto> _roomValidator;
 
-    public RoomService(IRoomRepository roomRepository)
+    public RoomService(IRoomRepository roomRepository, IValidator<RoomForWriteDto> roomValidator)
     {
         _roomRepository = roomRepository;
+        _roomValidator = roomValidator;
     }
 
-    public async Task<Room> CreateAsync(string name)
+    public async Task<FluentResults.Result<Room>> CreateAsync(RoomForWriteDto roomForWriteDto)
     {
-        Room room = new() { Name = name };
+        var validationResult = _roomValidator.Validate(roomForWriteDto);
+
+        if (!validationResult.IsValid)
+        {
+            var validationError = new ValidationError();
+
+            foreach (var error in validationResult.Errors)
+            {
+                validationError.CausedBy(
+                    new Error(error.ErrorMessage)
+                    .WithMetadata("PropertyName", error.PropertyName)
+                    .WithMetadata("ErrorCode", error.ErrorCode));
+            }
+
+            return FluentResults.Result.Fail(validationError);
+        }
+
+        Room room = new() { Name = roomForWriteDto.Name };
 
         await _roomRepository.InsertAsync(room);
         await _roomRepository.SaveChangesAsync();
@@ -45,12 +68,12 @@ public class RoomService : IRoomService
         return await _roomRepository.GetByIdAsync(id);
     }
 
-    public async Task<bool> UpdateAsync(int id, string newName)
+    public async Task<bool> UpdateAsync(int id, RoomForWriteDto roomForWriteDto)
     {
         var roomFromDb = await _roomRepository.GetByIdAsync(id);
         if (roomFromDb is not null)
         {
-            roomFromDb.Name = newName;
+            roomFromDb.Name = roomForWriteDto.Name;
 
             _roomRepository.Update(roomFromDb);
             await _roomRepository.SaveChangesAsync();
