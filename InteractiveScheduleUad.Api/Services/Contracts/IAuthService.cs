@@ -1,4 +1,5 @@
-﻿using InteractiveScheduleUad.Api.Models;
+﻿using FluentResults;
+using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Models.Dtos;
 using System.Security.Claims;
 

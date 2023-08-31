@@ -1,4 +1,5 @@
-﻿using InteractiveScheduleUad.Api.Models;
+﻿using InteractiveScheduleUad.Api.Extensions;
+using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Models.Dtos;
 using InteractiveScheduleUad.Api.Services.Contracts;
 using Microsoft.AspNetCore.Authorization;
@@ -25,14 +26,8 @@ public class AuthController : ControllerBase
     {
         var result = await _authService.Register(userForRegisterDto);
 
-        if (!result.IsSuccess)
-        {
-            return result.Exception switch
-            {
-                InvalidOperationException => BadRequest(result.Exception.Message),
-                _ => BadRequest(result.Exception),
-            };
-        }
+        if (result.IsFailed)
+            return result.Errors.First().ToObjectResult();
 
         return Ok(result.Value);
     }
@@ -46,17 +41,10 @@ public class AuthController : ControllerBase
     {
         var result = await _authService.Login(userForLoginDto);
 
-        if (!result.IsSuccess)
-        {
-            return result.Exception switch
-            {
-                KeyNotFoundException => NotFound(result.Exception.Message),
-                InvalidOperationException => BadRequest(result.Exception.Message),
-                _ => BadRequest(result.Exception),
-            };
-        }
-        else
-            return Ok(result.Value);
+        if (result.IsFailed)
+            return result.Errors.First().ToObjectResult();
+
+        return Ok(result.Value);
     }
 
     [HttpDelete("Logout")]
@@ -67,17 +55,10 @@ public class AuthController : ControllerBase
     {
         var result = await _authService.Logout(User);
 
-        if (!result.IsSuccess)
-        {
-            return result.Exception switch
-            {
-                FormatException => BadRequest(result.Exception.Message),
-                InvalidOperationException => BadRequest(result.Exception.Message),
-                _ => BadRequest(result.Exception),
-            };
-        }
-        else
-            return Ok();
+        if (result.IsFailed)
+            return result.Errors.First().ToObjectResult();
+
+        return Ok();
     }
 
     [HttpGet("RefreshToken")]
@@ -88,18 +69,10 @@ public class AuthController : ControllerBase
     {
         var result = await _authService.RefreshToken(User);
 
-        if (!result.IsSuccess)
-        {
-            return result.Exception switch
-            {
-                KeyNotFoundException => NotFound(result.Exception.Message),
-                FormatException => BadRequest(result.Exception.Message),
-                InvalidOperationException => BadRequest(result.Exception.Message),
-                _ => BadRequest(result.Exception),
-            };
-        }
-        else
-            return Ok(result.Value);
+        if (result.IsFailed)
+            return result.Errors.First().ToObjectResult();
+
+        return Ok(result.Value);
     }
 
     // TODO: Add DELETE, GET all, and PUT methods

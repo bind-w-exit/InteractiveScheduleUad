@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using FluentResults;
+using FluentValidation;
 using InteractiveScheduleUad.Api.Extensions;
 using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Models.Dtos;
@@ -18,14 +19,13 @@ public class RoomService : IRoomService
         _roomValidator = roomValidator;
     }
 
-    public async Task<FluentResults.Result<Room>> CreateAsync(RoomForWriteDto roomForWriteDto)
+    public async Task<Result<Room>> CreateAsync(RoomForWriteDto roomForWriteDto)
     {
         var validationResult = _roomValidator.Validate(roomForWriteDto);
 
         if (!validationResult.IsValid)
         {
-            var error = validationResult.Errors.ToValidationError();
-            return FluentResults.Result.Fail(error);
+            return validationResult.Errors.ToValidationError();
         }
 
         Room room = new() { Name = roomForWriteDto.Name };

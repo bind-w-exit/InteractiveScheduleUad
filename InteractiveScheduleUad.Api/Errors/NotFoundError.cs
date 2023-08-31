@@ -1,8 +1,10 @@
 ﻿using FluentResults;
 
-namespace InteractiveScheduleUad.Api.Errors
+namespace InteractiveScheduleUad.Api.Errors;
+
+public class NotFoundError : Error
 {
-    public class NotFoundError : Error
+    public NotFoundError(string entityName) : base($"{entityName} not found")
     {
     }
 }

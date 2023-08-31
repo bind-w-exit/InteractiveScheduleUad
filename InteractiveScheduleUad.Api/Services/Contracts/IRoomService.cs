@@ -1,11 +1,12 @@
-﻿using InteractiveScheduleUad.Api.Models;
+﻿using FluentResults;
+using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Models.Dtos;
 
 namespace InteractiveScheduleUad.Api.Services.Contracts;
 
 public interface IRoomService
 {
-    Task<FluentResults.Result<Room>> CreateAsync(RoomForWriteDto roomForWriteDto);
+    Task<Result<Room>> CreateAsync(RoomForWriteDto roomForWriteDto);
 
     Task<IEnumerable<Room>> GetAllAsync();
 

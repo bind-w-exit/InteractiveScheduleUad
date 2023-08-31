@@ -1,4 +1,6 @@
-﻿using InteractiveScheduleUad.Api.Mappers;
+﻿using FluentResults;
+using InteractiveScheduleUad.Api.Errors;
+using InteractiveScheduleUad.Api.Mappers;
 using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Models.Dtos;
 using InteractiveScheduleUad.Api.Repositories.Contracts;
@@ -28,7 +30,7 @@ public class AuthService : IAuthService
         var userFromDb = await _userRepository.SingleOrDefaultAsync(u => u.Username == userForRegisterDto.Username);
 
         if (userFromDb is not null)
-            return new InvalidOperationException("Username already exist");
+            return new EntityAlreadyExistsError(nameof(User.Username));
 
         _hashService.CreatePasswordHash(userForRegisterDto.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
@@ -97,10 +99,10 @@ public class AuthService : IAuthService
         var userFromDb = await _userRepository.SingleOrDefaultAsync(u => u.Username == userForLoginDto.UserName);
 
         if (userFromDb is null)
-            return new KeyNotFoundException("User not found");
+            return new NotFoundError(nameof(User));
 
         if (!_hashService.VerifyPasswordHash(userForLoginDto.Password, userFromDb.PasswordHash, userFromDb.PasswordSalt))
-            return new InvalidOperationException("Wrong password");
+            return new UnauthorizedError("Wrong password");
 
         AuthenticatedResponse response = _tokenService.GenerateAuthenticatedResponse(userFromDb);
 
@@ -112,13 +114,13 @@ public class AuthService : IAuthService
         var jtiString = claims.FindFirstValue(JwtRegisteredClaimNames.Jti);
         if (string.IsNullOrEmpty(jtiString) || Guid.TryParse(jtiString, out var jti))
         {
-            return new FormatException("The JTI is not a valid GUID.");
+            return new UnauthorizedError("The JTI is not a valid GUID.");
         }
 
         var tokenExpiresString = claims.FindFirstValue(JwtRegisteredClaimNames.Exp);
         if (string.IsNullOrEmpty(tokenExpiresString) || long.TryParse(tokenExpiresString, out long tokenExpiresSeconds))
         {
-            return new FormatException("The token expiry time is not valid.");
+            return new UnauthorizedError("The token expiry time is not valid.");
         }
         var tokenExpires = DateTimeOffset.FromUnixTimeSeconds(tokenExpiresSeconds);
 
@@ -145,32 +147,25 @@ public class AuthService : IAuthService
         var jtiString = claims.FindFirstValue(JwtRegisteredClaimNames.Jti);
         if (string.IsNullOrEmpty(jtiString) || Guid.TryParse(jtiString, out Guid jti))
         {
-            return new FormatException("The JTI is not a valid GUID.");
+            return new UnauthorizedError("The JTI is not a valid GUID.");
         }
-
-        var tokenExpiresString = claims.FindFirstValue(JwtRegisteredClaimNames.Exp);
-        if (string.IsNullOrEmpty(tokenExpiresString) || long.TryParse(tokenExpiresString, out long tokenExpiresSeconds))
-        {
-            return new FormatException("The token expiry time is not valid.");
-        }
-        var tokenExpires = DateTimeOffset.FromUnixTimeSeconds(tokenExpiresSeconds);
 
         var userId = claims.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userId) || int.TryParse(userId, out int userIdValue))
         {
-            return new FormatException("The user ID is not a valid integer.");
+            return new UnauthorizedError("The user ID is not a valid integer.");
         }
 
         var revokedToken = await _revokedTokenRepository.SingleOrDefaultAsync(t => t.Jti == jti);
         if (revokedToken is not null)
         {
-            return new InvalidOperationException("The token has been revoked.");
+            return new UnauthorizedError("The token has been revoked.");
         }
 
         var user = await _userRepository.GetByIdAsync(userIdValue);
         if (user is null)
         {
-            return new KeyNotFoundException("The user was not found.");
+            return new UnauthorizedError("The user was not found.");
         }
 
         return _tokenService.GenerateRefreshToken(user, jti);
