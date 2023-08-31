@@ -67,13 +67,15 @@ public class RoomController : ControllerBase
     [ProducesResponseType(typeof(Room), (int)HttpStatusCode.Created)]
     public async Task<ActionResult<Room>> Post([FromBody] RoomForWriteDto roomForWriteDto)
     {
-        var res = await _roomService.CreateAsync(roomForWriteDto);
+        var result = await _roomService.CreateAsync(roomForWriteDto);
 
-        if (res.IsFailed)
+        if (result.IsFailed)
         {
-            return res.Errors.FirstOrDefault().ToObjectResult();
+            return result.Errors.First().ToObjectResult();
         }
-        return CreatedAtAction(nameof(Get), new { id = res.Value.Id }, res.Value);
+
+        var createdRoom = result.Value;
+        return CreatedAtAction(nameof(Get), new { id = createdRoom.Id }, createdRoom);
     }
 
     // PUT api/<RoomController>/5

@@ -22,21 +22,12 @@ public static class ErrorToObjectResultExtensions
         {
             //Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1",
             Title = "One or more validation errors occurred.",
-            Status = StatusCodes.Status400BadRequest,
+            Status = StatusCodes.Status400BadRequest
         };
 
-        foreach (var error in validationError.Reasons)
+        foreach (var keyValuePair in validationError.Metadata)
         {
-            string propertyName = (string)error.Metadata["PropertyName"];
-
-            if (!validationProblemDetails.Errors.TryGetValue(propertyName, out string[]? value))
-            {
-                validationProblemDetails.Errors[propertyName] = new string[] { error.Message };
-            }
-            else
-            {
-                validationProblemDetails.Errors[propertyName] = value.Append(error.Message).ToArray();
-            }
+            validationProblemDetails.Errors.Add(keyValuePair.Key, ((List<string>)keyValuePair.Value).ToArray());
         }
 
         return validationProblemDetails;

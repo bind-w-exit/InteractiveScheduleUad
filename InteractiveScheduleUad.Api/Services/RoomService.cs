@@ -1,6 +1,5 @@
-﻿using FluentResults;
-using FluentValidation;
-using InteractiveScheduleUad.Api.Errors;
+﻿using FluentValidation;
+using InteractiveScheduleUad.Api.Extensions;
 using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Models.Dtos;
 using InteractiveScheduleUad.Api.Repositories.Contracts;
@@ -25,17 +24,8 @@ public class RoomService : IRoomService
 
         if (!validationResult.IsValid)
         {
-            var validationError = new ValidationError();
-
-            foreach (var error in validationResult.Errors)
-            {
-                validationError.CausedBy(
-                    new Error(error.ErrorMessage)
-                    .WithMetadata("PropertyName", error.PropertyName)
-                    .WithMetadata("ErrorCode", error.ErrorCode));
-            }
-
-            return FluentResults.Result.Fail(validationError);
+            var error = validationResult.Errors.ToValidationError();
+            return FluentResults.Result.Fail(error);
         }
 
         Room room = new() { Name = roomForWriteDto.Name };
