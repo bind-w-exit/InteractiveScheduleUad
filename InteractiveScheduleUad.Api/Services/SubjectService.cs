@@ -1,4 +1,6 @@
-﻿using InteractiveScheduleUad.Api.Models;
+﻿using FluentResults;
+using InteractiveScheduleUad.Api.Errors;
+using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Repositories.Contracts;
 using InteractiveScheduleUad.Api.Services.Contracts;
 
@@ -13,7 +15,7 @@ public class SubjectService : ISubjectService
         _subjectRepository = subjectRepository;
     }
 
-    public async Task<Subject> CreateAsync(string name)
+    public async Task<Result<Subject>> CreateAsync(string name)
     {
         Subject subject = new() { Name = name };
 
@@ -23,39 +25,52 @@ public class SubjectService : ISubjectService
         return subject;
     }
 
-    public async Task<bool> DeleteAsync(int id)
+    public async Task<Result> DeleteAsync(int id)
     {
         var subject = await _subjectRepository.GetByIdAsync(id);
+
         if (subject is not null)
         {
             _subjectRepository.Delete(subject);
             await _subjectRepository.SaveChangesAsync();
-            return true;
+
+            return Result.Ok();
         }
-        return false;
+        else
+            return new NotFoundError(nameof(Subject));
     }
 
-    public async Task<IEnumerable<Subject>> GetAllAsync()
+    public async Task<Result<IEnumerable<Subject>>> GetAllAsync()
     {
-        return await _subjectRepository.GetAllAsync();
+        var subjects = await _subjectRepository.GetAllAsync();
+
+        return Result.Ok(subjects);
     }
 
-    public async Task<Subject?> GetByIdAsync(int id)
+    public async Task<Result<Subject>> GetByIdAsync(int id)
     {
-        return await _subjectRepository.GetByIdAsync(id);
+        var subject = await _subjectRepository.GetByIdAsync(id);
+
+        if (subject is not null)
+            return subject;
+        else
+            return new NotFoundError(nameof(Subject));
     }
 
-    public async Task<bool> UpdateAsync(int id, string newName)
+    public async Task<Result> UpdateAsync(int id, string newName)
     {
-        var subjectFromDb = await _subjectRepository.GetByIdAsync(id);
-        if (subjectFromDb is not null)
+        var subject = await _subjectRepository.GetByIdAsync(id);
+
+        if (subject is not null)
         {
-            subjectFromDb.Name = newName;
+            subject.Name = newName;
 
-            _subjectRepository.Update(subjectFromDb);
+            _subjectRepository.Update(subject);
             await _subjectRepository.SaveChangesAsync();
-            return true;
+
+            return Result.Ok();
         }
-        return false;
+        else
+            return new NotFoundError(nameof(Subject));
     }
 }

@@ -1,4 +1,6 @@
-﻿using InteractiveScheduleUad.Api.Mappers;
+﻿using FluentResults;
+using InteractiveScheduleUad.Api.Errors;
+using InteractiveScheduleUad.Api.Mappers;
 using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Models.Dtos;
 using InteractiveScheduleUad.Api.Repositories.Contracts;
@@ -25,12 +27,12 @@ public class WeekScheduleService : IWeekScheduleService
         _roomRepository = roomRepository;
     }
 
-    public async Task<WeekScheduleForReadDto?> CreateAsync(int studentsGroupId, WeekScheduleForWriteDto weekScheduleForWriteDto, bool isSecondWeek)
+    public async Task<Result<WeekScheduleForReadDto>> CreateAsync(int studentsGroupId, WeekScheduleForWriteDto weekScheduleForWriteDto, bool isSecondWeek)
     {
         var studentsGroup = await _studentsGroupRepository.GetByIdAsync(studentsGroupId);
 
         if (studentsGroup is null)
-            return null;
+            return new NotFoundError(nameof(StudentsGroup));
 
         WeekSchedule weekSchedule = await WeekScheduleForReadDtoToWeekSchedule(weekScheduleForWriteDto);
 
@@ -44,12 +46,12 @@ public class WeekScheduleService : IWeekScheduleService
         return WeekScheduleMapper.WeekScheduleToWeekScheduleForReadDto(weekSchedule);
     }
 
-    public async Task<bool> DeleteAsync(int studentsGroupId, bool isSecondWeek)
+    public async Task<Result> DeleteAsync(int studentsGroupId, bool isSecondWeek)
     {
         var studentsGroup = await _studentsGroupRepository.GetByIdAsync(studentsGroupId);
 
         if (studentsGroup is null)
-            return false;
+            return new NotFoundError(nameof(StudentsGroup));
 
         if (isSecondWeek)
             studentsGroup.SecondWeekSchedule = null;
@@ -58,15 +60,15 @@ public class WeekScheduleService : IWeekScheduleService
 
         await _studentsGroupRepository.SaveChangesAsync();
 
-        return true;
+        return Result.Ok();
     }
 
-    public async Task<StudentsGroupForWriteDto?> GetByIdAsync(int studentsGroupId)
+    public async Task<Result<StudentsGroupForWriteDto>> GetByIdAsync(int studentsGroupId)
     {
         var studentsGroup = await _studentsGroupRepository.GetByIdAsync(studentsGroupId);
 
         if (studentsGroup is null)
-            return null;
+            return new NotFoundError(nameof(StudentsGroup));
 
         return StudentsGroupMapper.StudentsGroupToStudentsGroupForWriteDto(studentsGroup);
     }
@@ -85,35 +87,13 @@ public class WeekScheduleService : IWeekScheduleService
 
         return new WeekSchedule()
         {
-            Sunday = await sundayTask,
-            Monday = await mondayTask,
-            Tuesday = await tuesdayTask,
-            Wednesday = await wednesdayTask,
-            Thursday = await thursdayTask,
-            Friday = await fridayTask,
-            Saturday = await saturdayTask
-        };
-    }
-
-    private async Task<Lesson> LessonForWriteDtoToLesson(LessonForWriteDto lessonForWriteDto)
-    {
-        var teacherTask = _teacherRepository.GetByIdAsync(lessonForWriteDto.TeacherId);
-        var subjectTask = _subjectRepository.GetByIdAsync(lessonForWriteDto.SubjectId);
-        var roomTask = _roomRepository.GetByIdAsync(lessonForWriteDto.RoomId);
-
-        await Task.WhenAll(teacherTask, subjectTask, roomTask);
-
-        var teacher = await teacherTask;
-        var subject = await subjectTask;
-        var room = await roomTask;
-
-        return new Lesson()
-        {
-            Subject = subject,
-            Teacher = teacher,
-            Room = room,
-            ClassType = lessonForWriteDto.ClassType,
-            Sequence = lessonForWriteDto.Sequence
+            Sunday = sundayTask.Result,
+            Monday = mondayTask.Result,
+            Tuesday = tuesdayTask.Result,
+            Wednesday = wednesdayTask.Result,
+            Thursday = thursdayTask.Result,
+            Friday = fridayTask.Result,
+            Saturday = saturdayTask.Result
         };
     }
 
@@ -126,5 +106,23 @@ public class WeekScheduleService : IWeekScheduleService
         var lessons = await Task.WhenAll(tasks);
 
         return lessons;
+    }
+
+    private async Task<Lesson> LessonForWriteDtoToLesson(LessonForWriteDto lessonForWriteDto)
+    {
+        var teacherTask = _teacherRepository.GetByIdAsync(lessonForWriteDto.TeacherId);
+        var subjectTask = _subjectRepository.GetByIdAsync(lessonForWriteDto.SubjectId);
+        var roomTask = _roomRepository.GetByIdAsync(lessonForWriteDto.RoomId);
+
+        await Task.WhenAll(teacherTask, subjectTask, roomTask);
+
+        return new Lesson()
+        {
+            Subject = subjectTask.Result,
+            Teacher = teacherTask.Result,
+            Room = roomTask.Result,
+            ClassType = lessonForWriteDto.ClassType,
+            Sequence = lessonForWriteDto.Sequence
+        };
     }
 }

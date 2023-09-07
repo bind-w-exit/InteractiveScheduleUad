@@ -1,15 +1,14 @@
 ﻿using FluentValidation;
 using InteractiveScheduleUad.Api.Models.Dtos;
 
-namespace InteractiveScheduleUad.Api.Validators
+namespace InteractiveScheduleUad.Api.Validators;
+
+public class RoomForWriteDtoValidator : AbstractValidator<RoomForWriteDto>
 {
-    public class RoomForWriteDtoValidator : AbstractValidator<RoomForWriteDto>
+    public RoomForWriteDtoValidator()
     {
-        public RoomForWriteDtoValidator()
-        {
-            RuleFor(room => room.Name)
-                .NotEmpty()
-                .MaximumLength(100);
-        }
+        RuleFor(room => room.Name)
+            .NotEmpty()
+            .MaximumLength(100);
     }
 }

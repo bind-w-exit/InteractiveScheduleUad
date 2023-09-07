@@ -209,6 +209,6 @@ static async Task CreateFirstUserIfEmpty(IAuthService authService, IUserReposito
     var admin = await userRepository.FirstOrDefaultAsync(user => user.UserRole == UserRole.Admin);
     if (admin is null)
     {
-        authService.Register(new() { Username = configuration["ADMIN_USERNAME"], Password = configuration["ADMIN_PASSWORD"] });
+        await authService.Register(new() { Username = configuration["ADMIN_USERNAME"], Password = configuration["ADMIN_PASSWORD"] });
     }
 }

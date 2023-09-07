@@ -1,4 +1,7 @@
-﻿using InteractiveScheduleUad.Api.Models;
+﻿using FluentResults;
+using InteractiveScheduleUad.Api.Errors;
+using InteractiveScheduleUad.Api.Mappers;
+using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Models.Dtos;
 using InteractiveScheduleUad.Api.Repositories.Contracts;
 using InteractiveScheduleUad.Api.Services.Contracts;
@@ -16,9 +19,10 @@ public class TeacherService : ITeacherService
         _departmentRepository = departmentRepository;
     }
 
-    public async Task<Teacher> CreateAsync(TeacherForWriteDto teacherForWriteDto)
+    public async Task<Result<Teacher>> CreateAsync(TeacherForWriteDto teacherForWriteDto)
     {
-        Teacher teacher = await TeacherForWriteDtoToTeacher(teacherForWriteDto);
+        Teacher teacher = TeacherMapper.TeacherForWriteDtoToTeacher(teacherForWriteDto);
+        teacher.Department = await _departmentRepository.GetByIdAsync(teacherForWriteDto.DepartmentId);
 
         await _teacherRepository.InsertAsync(teacher);
         await _teacherRepository.SaveChangesAsync();
@@ -26,67 +30,53 @@ public class TeacherService : ITeacherService
         return teacher;
     }
 
-    public async Task<bool> DeleteAsync(int id)
+    public async Task<Result> DeleteAsync(int id)
     {
         var teacher = await _teacherRepository.GetByIdAsync(id);
+
         if (teacher is not null)
         {
             _teacherRepository.Delete(teacher);
             await _teacherRepository.SaveChangesAsync();
-            return true;
+
+            return Result.Ok();
         }
-        return false;
+        else
+            return new NotFoundError(nameof(Teacher));
     }
 
-    public async Task<IEnumerable<Teacher>> GetAllAsync()
+    public async Task<Result<IEnumerable<Teacher>>> GetAllAsync()
     {
-        return await _teacherRepository.GetAllAsync(true);
+        var teachers = await _teacherRepository.GetAllAsync(true);
+
+        return Result.Ok(teachers);
     }
 
-    public async Task<Teacher?> GetByIdAsync(int id)
+    public async Task<Result<Teacher>> GetByIdAsync(int id)
     {
-        return await _teacherRepository.GetByIdAsync(id);
+        var teacher = await _teacherRepository.GetByIdAsync(id);
+
+        if (teacher is not null)
+            return teacher;
+        else
+            return new NotFoundError(nameof(Teacher));
     }
 
-    public async Task<bool> UpdateAsync(int id, TeacherForWriteDto teacherForWriteDto)
+    public async Task<Result> UpdateAsync(int id, TeacherForWriteDto teacherForWriteDto)
     {
-        var teacherFromDb = await _teacherRepository.GetByIdAsync(id);
-        if (teacherFromDb is not null)
+        var teacher = await _teacherRepository.GetByIdAsync(id);
+
+        if (teacher is not null)
         {
-            await TeacherForWriteDtoToTeacher(teacherForWriteDto, teacherFromDb);
+            TeacherMapper.TeacherForWriteDtoToTeacher(teacherForWriteDto, teacher);
+            teacher.Department = await _departmentRepository.GetByIdAsync(teacherForWriteDto.DepartmentId);
 
-            _teacherRepository.Update(teacherFromDb);
+            _teacherRepository.Update(teacher);
             await _teacherRepository.SaveChangesAsync();
 
-            return true;
+            return Result.Ok();
         }
-        return false;
-    }
-
-    private async Task TeacherForWriteDtoToTeacher(TeacherForWriteDto teacherForWriteDto, Teacher teacher)
-    {
-        var department = await _departmentRepository.GetByIdAsync(teacherForWriteDto.DepartmentId);
-
-        teacher.Department = department;
-        teacher.Email = teacherForWriteDto.Email;
-        teacher.FirstName = teacherForWriteDto.FirstName;
-        teacher.LastName = teacherForWriteDto.LastName;
-        teacher.MiddleName = teacherForWriteDto.MiddleName;
-        teacher.Qualifications = teacherForWriteDto.Qualifications;
-    }
-
-    private async Task<Teacher> TeacherForWriteDtoToTeacher(TeacherForWriteDto teacherForWriteDto)
-    {
-        var department = await _departmentRepository.GetByIdAsync(teacherForWriteDto.DepartmentId);
-
-        return new()
-        {
-            Department = department,
-            Email = teacherForWriteDto.Email,
-            FirstName = teacherForWriteDto.FirstName,
-            LastName = teacherForWriteDto.LastName,
-            MiddleName = teacherForWriteDto.MiddleName,
-            Qualifications = teacherForWriteDto.Qualifications,
-        };
+        else
+            return new NotFoundError(nameof(Teacher));
     }
 }

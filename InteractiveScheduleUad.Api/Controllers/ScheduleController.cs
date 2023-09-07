@@ -1,4 +1,5 @@
-﻿using InteractiveScheduleUad.Api.Models.Dtos;
+﻿using InteractiveScheduleUad.Api.Extensions;
+using InteractiveScheduleUad.Api.Models.Dtos;
 using InteractiveScheduleUad.Api.Services.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -30,12 +31,12 @@ public class ScheduleController : ControllerBase
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult<StudentsGroupForWriteDto>> Get(int studentsGroupId)
     {
-        StudentsGroupForWriteDto? studentsGroupForWriteDto = await _weekScheduleService.GetByIdAsync(studentsGroupId);
+        var result = await _weekScheduleService.GetByIdAsync(studentsGroupId);
 
-        if (studentsGroupForWriteDto is null)
-            return NotFound("Students group with the specified ID was not found");
+        if (result.IsFailed)
+            return result.Errors.First().ToObjectResult();
         else
-            return Ok(studentsGroupForWriteDto);
+            return Ok(result.Value);
     }
 
     // POST api/<ScheduleController>
@@ -54,12 +55,12 @@ public class ScheduleController : ControllerBase
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult<WeekScheduleForReadDto>> Post([FromQuery] int studentsGroupId, [FromBody] WeekScheduleForWriteDto weekSchedule, [FromQuery] bool isSecondWeek = false)
     {
-        WeekScheduleForReadDto? weekScheduleForReadDto = await _weekScheduleService.CreateAsync(studentsGroupId, weekSchedule, isSecondWeek);
+        var result = await _weekScheduleService.CreateAsync(studentsGroupId, weekSchedule, isSecondWeek);
 
-        if (weekScheduleForReadDto is null)
-            return NotFound("Students group with the specified ID was not found");
+        if (result.IsFailed)
+            return result.Errors.First().ToObjectResult();
         else
-            return Ok(weekScheduleForReadDto);
+            return Ok(result.Value);
     }
 
     // DELETE api/<ScheduleController>/5
@@ -76,10 +77,10 @@ public class ScheduleController : ControllerBase
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult> Delete([FromQuery] int studentsGroupId, [FromQuery] bool isSecondWeek = false)
     {
-        bool success = await _weekScheduleService.DeleteAsync(studentsGroupId, isSecondWeek);
+        var result = await _weekScheduleService.DeleteAsync(studentsGroupId, isSecondWeek);
 
-        if (!success)
-            return NotFound("Students group with the specified ID was not found");
+        if (result.IsFailed)
+            return result.Errors.First().ToObjectResult();
         else
             return Ok();
     }

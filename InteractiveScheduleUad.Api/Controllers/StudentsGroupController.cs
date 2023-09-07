@@ -1,4 +1,5 @@
-﻿using InteractiveScheduleUad.Api.Models.Dtos;
+﻿using InteractiveScheduleUad.Api.Extensions;
+using InteractiveScheduleUad.Api.Models.Dtos;
 using InteractiveScheduleUad.Api.Services.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -27,9 +28,12 @@ public class StudentsGroupController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<StudentsGroupForReadDto>), (int)HttpStatusCode.OK)]
     public async Task<ActionResult<IEnumerable<StudentsGroupForReadDto>>> Get()
     {
-        IEnumerable<StudentsGroupForReadDto> studentsGroups = await _studentsGroupService.GetAllAsync();
+        var result = await _studentsGroupService.GetAllAsync();
 
-        return Ok(studentsGroups);
+        if (result.IsFailed)
+            return result.Errors.First().ToObjectResult();
+        else
+            return Ok(result.Value);
     }
 
     // GET api/<StudentsGroupController>/5
@@ -45,12 +49,12 @@ public class StudentsGroupController : ControllerBase
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult<StudentsGroupForReadDto>> Get(int id)
     {
-        StudentsGroupForReadDto? studentsGroup = await _studentsGroupService.GetByIdAsync(id);
+        var result = await _studentsGroupService.GetAllAsync();
 
-        if (studentsGroup is null)
-            return NotFound("Students group with the specified ID was not found");
+        if (result.IsFailed)
+            return result.Errors.First().ToObjectResult();
         else
-            return Ok(studentsGroup);
+            return Ok(result.Value);
     }
 
     // POST api/<StudentsGroupController>
@@ -65,9 +69,13 @@ public class StudentsGroupController : ControllerBase
     [ProducesResponseType(typeof(StudentsGroupForReadDto), (int)HttpStatusCode.Created)]
     public async Task<ActionResult<StudentsGroupForReadDto>> Post([FromBody] string groupName)
     {
-        StudentsGroupForReadDto studentsGroupForReadDto = await _studentsGroupService.CreateAsync(groupName);
+        var result = await _studentsGroupService.CreateAsync(groupName);
 
-        return CreatedAtAction(nameof(Get), new { id = studentsGroupForReadDto.Id }, studentsGroupForReadDto);
+        if (result.IsFailed)
+            return result.Errors.First().ToObjectResult();
+
+        var createdStudentsGroup = result.Value;
+        return CreatedAtAction(nameof(Get), new { id = createdStudentsGroup.Id }, createdStudentsGroup);
     }
 
     // PUT api/<StudentsGroupController>/5
@@ -85,10 +93,10 @@ public class StudentsGroupController : ControllerBase
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult> Put(int id, [FromBody] string newGroupName)
     {
-        bool success = await _studentsGroupService.UpdateAsync(id, newGroupName);
+        var result = await _studentsGroupService.UpdateAsync(id, newGroupName);
 
-        if (!success)
-            return NotFound("Students group with the specified ID was not found");
+        if (result.IsFailed)
+            return result.Errors.First().ToObjectResult();
         else
             return Ok();
     }
@@ -106,10 +114,10 @@ public class StudentsGroupController : ControllerBase
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult> Delete(int id)
     {
-        bool success = await _studentsGroupService.DeleteAsync(id);
+        var result = await _studentsGroupService.DeleteAsync(id);
 
-        if (!success)
-            return NotFound("Students group with the specified ID was not found");
+        if (result.IsFailed)
+            return result.Errors.First().ToObjectResult();
         else
             return Ok();
     }

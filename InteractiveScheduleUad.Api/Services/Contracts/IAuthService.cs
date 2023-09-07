@@ -9,15 +9,15 @@ public interface IAuthService
 {
     Task<Result<UserForReadDto>> Register(UserForRegisterDto userForRegisterDto);
 
-    Task<bool> DeleteAsync(string username);
+    Task<Result> DeleteAsync(string username);
 
-    Task<IEnumerable<UserForReadDto>> GetAllAsync();
+    Task<Result<IEnumerable<UserForReadDto>>> GetAllAsync();
 
-    Task<bool> UpdateAsync(string username, UserForRegisterDto userForRegisterDto);
+    Task<Result> UpdateAsync(string username, UserForRegisterDto userForRegisterDto);
 
     Task<Result<AuthenticatedResponse>> Login(UserForLoginDto userForLoginDto);
 
-    Task<Result<bool>> Logout(ClaimsPrincipal claims);
+    Task<Result> Logout(ClaimsPrincipal claims);
 
     Task<Result<string>> RefreshToken(ClaimsPrincipal claims);
 }

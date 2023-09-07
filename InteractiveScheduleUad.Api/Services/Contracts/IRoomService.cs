@@ -8,11 +8,11 @@ public interface IRoomService
 {
     Task<Result<Room>> CreateAsync(RoomForWriteDto roomForWriteDto);
 
-    Task<IEnumerable<Room>> GetAllAsync();
+    Task<Result<IEnumerable<Room>>> GetAllAsync();
 
-    Task<Room?> GetByIdAsync(int id);
+    Task<Result<Room>> GetByIdAsync(int id);
 
-    Task<bool> UpdateAsync(int id, RoomForWriteDto roomForWriteDto);
+    Task<Result> UpdateAsync(int id, RoomForWriteDto roomForWriteDto);
 
-    Task<bool> DeleteAsync(int id);
+    Task<Result> DeleteAsync(int id);
 }

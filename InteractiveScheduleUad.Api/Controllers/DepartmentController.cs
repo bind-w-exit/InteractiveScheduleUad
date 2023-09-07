@@ -1,4 +1,5 @@
-﻿using InteractiveScheduleUad.Api.Models;
+﻿using InteractiveScheduleUad.Api.Extensions;
+using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Models.Dtos;
 using InteractiveScheduleUad.Api.Services.Contracts;
 using Microsoft.AspNetCore.Authorization;
@@ -29,9 +30,12 @@ public class DepartmentController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<Department>), (int)HttpStatusCode.OK)]
     public async Task<ActionResult<IEnumerable<Department>>> Get()
     {
-        IEnumerable<Department> departments = await _departmentService.GetAllAsync();
+        var result = await _departmentService.GetAllAsync();
 
-        return Ok(departments);
+        if (result.IsFailed)
+            return result.Errors.First().ToObjectResult();
+        else
+            return Ok(result.Value);
     }
 
     // GET api/<DepartmentController>/5
@@ -47,12 +51,12 @@ public class DepartmentController : ControllerBase
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult<Department>> Get(int id)
     {
-        Department? department = await _departmentService.GetByIdAsync(id);
+        var result = await _departmentService.GetByIdAsync(id);
 
-        if (department is null)
-            return NotFound("Department with the specified ID was not found");
+        if (result.IsFailed)
+            return result.Errors.First().ToObjectResult();
         else
-            return Ok(department);
+            return Ok(result.Value);
     }
 
     // POST api/<DepartmentController>
@@ -67,9 +71,13 @@ public class DepartmentController : ControllerBase
     [ProducesResponseType(typeof(Department), (int)HttpStatusCode.Created)]
     public async Task<ActionResult<Department>> Post([FromBody] DepartmentForWriteDto department)
     {
-        Department departmentFromDb = await _departmentService.CreateAsync(department);
+        var result = await _departmentService.CreateAsync(department);
 
-        return CreatedAtAction(nameof(Get), new { id = departmentFromDb.Id }, departmentFromDb);
+        if (result.IsFailed)
+            return result.Errors.First().ToObjectResult();
+
+        var createdDepartment = result.Value;
+        return CreatedAtAction(nameof(Get), new { id = createdDepartment.Id }, createdDepartment);
     }
 
     // PUT api/<DepartmentController>/5
@@ -87,10 +95,10 @@ public class DepartmentController : ControllerBase
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult> Put(int id, [FromBody] DepartmentForWriteDto newDepartment)
     {
-        bool success = await _departmentService.UpdateAsync(id, newDepartment);
+        var result = await _departmentService.UpdateAsync(id, newDepartment);
 
-        if (!success)
-            return NotFound("Department with the specified ID was not found");
+        if (result.IsFailed)
+            return result.Errors.First().ToObjectResult();
         else
             return Ok();
     }
@@ -108,10 +116,10 @@ public class DepartmentController : ControllerBase
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult> Delete(int id)
     {
-        bool success = await _departmentService.DeleteAsync(id);
+        var result = await _departmentService.DeleteAsync(id);
 
-        if (!success)
-            return NotFound("Department with the specified ID was not found");
+        if (result.IsFailed)
+            return result.Errors.First().ToObjectResult();
         else
             return Ok();
     }

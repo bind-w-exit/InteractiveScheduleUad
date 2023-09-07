@@ -1,4 +1,5 @@
-﻿using InteractiveScheduleUad.Api.Models;
+﻿using InteractiveScheduleUad.Api.Extensions;
+using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Models.Dtos;
 using InteractiveScheduleUad.Api.Services.Contracts;
 using Microsoft.AspNetCore.Authorization;
@@ -28,9 +29,12 @@ public class TeacherController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<Teacher>), (int)HttpStatusCode.OK)]
     public async Task<ActionResult<IEnumerable<Teacher>>> Get()
     {
-        IEnumerable<Teacher> teachers = await _teacherService.GetAllAsync();
+        var result = await _teacherService.GetAllAsync();
 
-        return Ok(teachers);
+        if (result.IsFailed)
+            return result.Errors.First().ToObjectResult();
+        else
+            return Ok(result.Value);
     }
 
     // GET api/<TeacherController>/5
@@ -46,12 +50,12 @@ public class TeacherController : ControllerBase
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult<Teacher>> Get(int id)
     {
-        Teacher? teacher = await _teacherService.GetByIdAsync(id);
+        var result = await _teacherService.GetByIdAsync(id);
 
-        if (teacher is null)
-            return NotFound("Teacher with the specified ID was not found");
+        if (result.IsFailed)
+            return result.Errors.First().ToObjectResult();
         else
-            return Ok(teacher);
+            return Ok(result.Value);
     }
 
     // POST api/<TeacherController>
@@ -66,9 +70,13 @@ public class TeacherController : ControllerBase
     [ProducesResponseType(typeof(Teacher), (int)HttpStatusCode.Created)]
     public async Task<ActionResult<Teacher>> Post([FromBody] TeacherForWriteDto teacher)
     {
-        Teacher teacherFromDb = await _teacherService.CreateAsync(teacher);
+        var result = await _teacherService.CreateAsync(teacher);
 
-        return CreatedAtAction(nameof(Get), new { id = teacherFromDb.Id }, teacherFromDb);
+        if (result.IsFailed)
+            return result.Errors.First().ToObjectResult();
+
+        var createdTeacher = result.Value;
+        return CreatedAtAction(nameof(Get), new { id = createdTeacher.Id }, createdTeacher);
     }
 
     // PUT api/<TeacherController>/5
@@ -86,10 +94,10 @@ public class TeacherController : ControllerBase
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult> Put(int id, [FromBody] TeacherForWriteDto newTeacher)
     {
-        bool success = await _teacherService.UpdateAsync(id, newTeacher);
+        var result = await _teacherService.UpdateAsync(id, newTeacher);
 
-        if (!success)
-            return NotFound("Teacher with the specified ID was not found");
+        if (result.IsFailed)
+            return result.Errors.First().ToObjectResult();
         else
             return Ok();
     }
@@ -107,10 +115,10 @@ public class TeacherController : ControllerBase
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult> Delete(int id)
     {
-        bool success = await _teacherService.DeleteAsync(id);
+        var result = await _teacherService.DeleteAsync(id);
 
-        if (!success)
-            return NotFound("Teacher with the specified ID was not found");
+        if (result.IsFailed)
+            return result.Errors.First().ToObjectResult();
         else
             return Ok();
     }

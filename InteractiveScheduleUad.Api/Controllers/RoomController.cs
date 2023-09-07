@@ -29,9 +29,12 @@ public class RoomController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<Room>), (int)HttpStatusCode.OK)]
     public async Task<ActionResult<IEnumerable<Room>>> Get()
     {
-        IEnumerable<Room> rooms = await _roomService.GetAllAsync();
+        var result = await _roomService.GetAllAsync();
 
-        return Ok(rooms);
+        if (result.IsFailed)
+            return result.Errors.First().ToObjectResult();
+        else
+            return Ok(result.Value);
     }
 
     // GET api/<RoomController>/5
@@ -47,12 +50,12 @@ public class RoomController : ControllerBase
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult<Room>> Get(int id)
     {
-        Room? room = await _roomService.GetByIdAsync(id);
+        var result = await _roomService.GetByIdAsync(id);
 
-        if (room is null)
-            return NotFound("Room with the specified ID was not found");
+        if (result.IsFailed)
+            return result.Errors.First().ToObjectResult();
         else
-            return Ok(room);
+            return Ok(result.Value);
     }
 
     // POST api/<RoomController>
@@ -70,9 +73,7 @@ public class RoomController : ControllerBase
         var result = await _roomService.CreateAsync(roomForWriteDto);
 
         if (result.IsFailed)
-        {
             return result.Errors.First().ToObjectResult();
-        }
 
         var createdRoom = result.Value;
         return CreatedAtAction(nameof(Get), new { id = createdRoom.Id }, createdRoom);
@@ -93,10 +94,10 @@ public class RoomController : ControllerBase
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult> Put(int id, [FromBody] RoomForWriteDto roomForWriteDto)
     {
-        bool success = await _roomService.UpdateAsync(id, roomForWriteDto);
+        var result = await _roomService.UpdateAsync(id, roomForWriteDto);
 
-        if (!success)
-            return NotFound("Room with the specified ID was not found");
+        if (result.IsFailed)
+            return result.Errors.First().ToObjectResult();
         else
             return Ok();
     }
@@ -114,10 +115,10 @@ public class RoomController : ControllerBase
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult> Delete(int id)
     {
-        bool success = await _roomService.DeleteAsync(id);
+        var result = await _roomService.DeleteAsync(id);
 
-        if (!success)
-            return NotFound("Room with the specified ID was not found");
+        if (result.IsFailed)
+            return result.Errors.First().ToObjectResult();
         else
             return Ok();
     }

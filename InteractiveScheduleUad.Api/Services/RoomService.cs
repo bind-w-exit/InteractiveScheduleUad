@@ -1,5 +1,6 @@
 ﻿using FluentResults;
 using FluentValidation;
+using InteractiveScheduleUad.Api.Errors;
 using InteractiveScheduleUad.Api.Extensions;
 using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Models.Dtos;
@@ -36,39 +37,59 @@ public class RoomService : IRoomService
         return room;
     }
 
-    public async Task<bool> DeleteAsync(int id)
+    public async Task<Result> DeleteAsync(int id)
     {
         var room = await _roomRepository.GetByIdAsync(id);
+
         if (room is not null)
         {
             _roomRepository.Delete(room);
             await _roomRepository.SaveChangesAsync();
-            return true;
+
+            return Result.Ok();
         }
-        return false;
+        else
+            return new NotFoundError(nameof(Room));
     }
 
-    public async Task<IEnumerable<Room>> GetAllAsync()
+    public async Task<Result<IEnumerable<Room>>> GetAllAsync()
     {
-        return await _roomRepository.GetAllAsync();
+        var rooms = await _roomRepository.GetAllAsync();
+
+        return Result.Ok(rooms);
     }
 
-    public async Task<Room?> GetByIdAsync(int id)
+    public async Task<Result<Room>> GetByIdAsync(int id)
     {
-        return await _roomRepository.GetByIdAsync(id);
+        var room = await _roomRepository.GetByIdAsync(id);
+
+        if (room is not null)
+            return room;
+        else
+            return new NotFoundError(nameof(Room));
     }
 
-    public async Task<bool> UpdateAsync(int id, RoomForWriteDto roomForWriteDto)
+    public async Task<Result> UpdateAsync(int id, RoomForWriteDto roomForWriteDto)
     {
-        var roomFromDb = await _roomRepository.GetByIdAsync(id);
-        if (roomFromDb is not null)
+        var validationResult = _roomValidator.Validate(roomForWriteDto);
+
+        if (!validationResult.IsValid)
         {
-            roomFromDb.Name = roomForWriteDto.Name;
-
-            _roomRepository.Update(roomFromDb);
-            await _roomRepository.SaveChangesAsync();
-            return true;
+            return validationResult.Errors.ToValidationError();
         }
-        return false;
+
+        var room = await _roomRepository.GetByIdAsync(id);
+
+        if (room is not null)
+        {
+            room.Name = roomForWriteDto.Name;
+
+            _roomRepository.Update(room);
+            await _roomRepository.SaveChangesAsync();
+
+            return Result.Ok();
+        }
+        else
+            return new NotFoundError(nameof(Room));
     }
 }

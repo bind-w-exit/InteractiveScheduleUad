@@ -11,6 +11,10 @@ public static partial class StudentsGroupMapper
     [MapperIgnoreSource(nameof(StudentsGroup.SecondWeekSchedule))]
     public static partial StudentsGroupForReadDto StudentsGroupToStudentsGroupForReadDto(StudentsGroup studentsGroup);
 
+    [MapperIgnoreSource(nameof(StudentsGroup.FirstWeekSchedule))]
+    [MapperIgnoreSource(nameof(StudentsGroup.SecondWeekSchedule))]
+    public static partial void StudentsGroupToStudentsGroupForReadDto(StudentsGroup studentsGroup, StudentsGroupForReadDto studentsGroupForReadDto);
+
     [MapperIgnoreSource(nameof(StudentsGroup.Id))]
     public static partial StudentsGroupForWriteDto StudentsGroupToStudentsGroupForWriteDto(StudentsGroup studentsGroup);
 

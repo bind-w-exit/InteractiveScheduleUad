@@ -1,4 +1,6 @@
-﻿using InteractiveScheduleUad.Api.Mappers;
+﻿using FluentResults;
+using InteractiveScheduleUad.Api.Errors;
+using InteractiveScheduleUad.Api.Mappers;
 using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Models.Dtos;
 using InteractiveScheduleUad.Api.Repositories.Contracts;
@@ -15,7 +17,7 @@ public class AuthorService : IAuthorService
         _authorRepository = authorRepository;
     }
 
-    public async Task<Author> CreateAsync(AuthorForWriteDto authorForWriteDto)
+    public async Task<Result<Author>> CreateAsync(AuthorForWriteDto authorForWriteDto)
     {
         Author author = AuthorMapper.AuthorForWriteDtoToAuthor(authorForWriteDto);
 
@@ -25,41 +27,53 @@ public class AuthorService : IAuthorService
         return author;
     }
 
-    public async Task<bool> DeleteAsync(int id)
+    public async Task<Result> DeleteAsync(int id)
     {
         var author = await _authorRepository.GetByIdAsync(id);
+
         if (author is not null)
         {
             _authorRepository.Delete(author);
             await _authorRepository.SaveChangesAsync();
-            return true;
+
+            return Result.Ok();
         }
-        return false;
+        else
+            return new NotFoundError(nameof(Author));
     }
 
-    public async Task<IEnumerable<AuthorForReadDto>> GetAllAsync()
+    public async Task<Result<IEnumerable<AuthorForReadDto>>> GetAllAsync()
     {
-        var authorsFromDb = await _authorRepository.GetAllAsync();
-        return authorsFromDb.Select(AuthorMapper.AuthorToAuthorForReadDto);
+        var authors = await _authorRepository.GetAllAsync();
+        var mappedAuthors = authors.Select(AuthorMapper.AuthorToAuthorForReadDto);
+
+        return Result.Ok(mappedAuthors);
     }
 
-    public async Task<Author?> GetByIdAsync(int id)
+    public async Task<Result<Author>> GetByIdAsync(int id)
     {
-        return await _authorRepository.GetByIdAsync(id);
+        var author = await _authorRepository.GetByIdAsync(id);
+
+        if (author is not null)
+            return author;
+        else
+            return new NotFoundError(nameof(Author));
     }
 
-    public async Task<bool> UpdateAsync(int id, AuthorForWriteDto authorForWriteDto)
+    public async Task<Result> UpdateAsync(int id, AuthorForWriteDto authorForWriteDto)
     {
-        var authorFromDb = await _authorRepository.GetByIdAsync(id);
-        if (authorFromDb is not null)
+        var author = await _authorRepository.GetByIdAsync(id);
+
+        if (author is not null)
         {
-            AuthorMapper.AuthorForWriteDtoToAuthor(authorForWriteDto, authorFromDb);
+            AuthorMapper.AuthorForWriteDtoToAuthor(authorForWriteDto, author);
 
-            _authorRepository.Update(authorFromDb);
+            _authorRepository.Update(author);
             await _authorRepository.SaveChangesAsync();
 
-            return true;
+            return Result.Ok();
         }
-        return false;
+        else
+            return new NotFoundError(nameof(Author));
     }
 }

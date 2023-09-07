@@ -1,16 +1,17 @@
-﻿using InteractiveScheduleUad.Api.Models;
+﻿using FluentResults;
+using InteractiveScheduleUad.Api.Models;
 
 namespace InteractiveScheduleUad.Api.Services.Contracts;
 
 public interface ISubjectService
 {
-    Task<Subject> CreateAsync(string name);
+    Task<Result<Subject>> CreateAsync(string name);
 
-    Task<IEnumerable<Subject>> GetAllAsync();
+    Task<Result<IEnumerable<Subject>>> GetAllAsync();
 
-    Task<Subject?> GetByIdAsync(int id);
+    Task<Result<Subject>> GetByIdAsync(int id);
 
-    Task<bool> UpdateAsync(int id, string newName);
+    Task<Result> UpdateAsync(int id, string newName);
 
-    Task<bool> DeleteAsync(int id);
+    Task<Result> DeleteAsync(int id);
 }

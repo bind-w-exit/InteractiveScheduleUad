@@ -10,6 +10,7 @@
 - 💾 Database Support
   - ✔️ PostgreSQL
   - ❌ MongoDB
+  - ❌ Redis (cache?)
 - 🐳 Docker Support
   - ✔️ Local development with a local database (compose, automatic)
   - ✔️ GitHub Codespaces with its own database (compose, automatic)
@@ -19,10 +20,10 @@
   - ✔️ Refresh tokens
   - ✔️ Logout
 - 💼 Business logic
-  - ✔️ Mapperly
-  - 🔜 Result Monad
+  - ✔️ Mapping (Mapperly)
+  - ✔️ Result Monad (FluentResults for now, but I will change it to OneOf)
+  - 🔜 Validation (FluentValidation)
   - ❌ Run without a database connection
-  - ❌ Validation
 
 ## Getting Started
 

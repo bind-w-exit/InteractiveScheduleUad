@@ -1,4 +1,6 @@
-﻿using InteractiveScheduleUad.Api.Mappers;
+﻿using FluentResults;
+using InteractiveScheduleUad.Api.Errors;
+using InteractiveScheduleUad.Api.Mappers;
 using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Models.Dtos;
 using InteractiveScheduleUad.Api.Repositories.Contracts;
@@ -15,62 +17,69 @@ public class StudentsGroupService : IStudentsGroupService
         _studentsGroupRepository = studentsGroupRepository;
     }
 
-    public async Task<StudentsGroupForReadDto> CreateAsync(string name)
+    public async Task<Result<StudentsGroupForReadDto>> CreateAsync(string name)
     {
         StudentsGroup studentsGroup = new() { GroupName = name };
 
         await _studentsGroupRepository.InsertAsync(studentsGroup);
         await _studentsGroupRepository.SaveChangesAsync();
 
-        return StudentsGroupMapper.StudentsGroupToStudentsGroupForReadDto(studentsGroup);
+        var mappedStudentsGroup = StudentsGroupMapper.StudentsGroupToStudentsGroupForReadDto(studentsGroup);
+
+        return mappedStudentsGroup;
     }
 
-    public async Task<bool> DeleteAsync(int id)
-    {
-        var department = await _studentsGroupRepository.GetByIdAsync(id);
-        if (department is not null)
-        {
-            _studentsGroupRepository.Delete(department);
-            await _studentsGroupRepository.SaveChangesAsync();
-            return true;
-        }
-        return false;
-    }
-
-    public async Task<IEnumerable<StudentsGroupForReadDto>> GetAllAsync()
-    {
-        var studentsGroups = await _studentsGroupRepository.GetAllAsync();
-
-        List<StudentsGroupForReadDto> studentsGroupsForListDto = new();
-        foreach (var studentsGroup in studentsGroups)
-        {
-            studentsGroupsForListDto.Add(StudentsGroupMapper.StudentsGroupToStudentsGroupForReadDto(studentsGroup));
-        }
-
-        return studentsGroupsForListDto;
-    }
-
-    public async Task<StudentsGroupForReadDto?> GetByIdAsync(int id)
+    public async Task<Result> DeleteAsync(int id)
     {
         var studentsGroup = await _studentsGroupRepository.GetByIdAsync(id);
 
         if (studentsGroup is not null)
-            return StudentsGroupMapper.StudentsGroupToStudentsGroupForReadDto(studentsGroup);
+        {
+            _studentsGroupRepository.Delete(studentsGroup);
+            await _studentsGroupRepository.SaveChangesAsync();
 
-        return null;
+            return Result.Ok();
+        }
+        else
+            return new NotFoundError(nameof(StudentsGroup));
     }
 
-    public async Task<bool> UpdateAsync(int id, string newName)
+    public async Task<Result<IEnumerable<StudentsGroupForReadDto>>> GetAllAsync()
     {
-        var studentsGroupFromDb = await _studentsGroupRepository.GetByIdAsync(id);
-        if (studentsGroupFromDb is not null)
-        {
-            studentsGroupFromDb.GroupName = newName;
+        var studentsGroups = await _studentsGroupRepository.GetAllAsync();
+        var mappedStudentsGroups = studentsGroups.Select(StudentsGroupMapper.StudentsGroupToStudentsGroupForReadDto);
 
-            _studentsGroupRepository.Update(studentsGroupFromDb);
-            await _studentsGroupRepository.SaveChangesAsync();
-            return true;
+        return Result.Ok(mappedStudentsGroups);
+    }
+
+    public async Task<Result<StudentsGroupForReadDto>> GetByIdAsync(int id)
+    {
+        var studentsGroup = await _studentsGroupRepository.GetByIdAsync(id);
+
+        if (studentsGroup is not null)
+        {
+            var mappedStudentsGroup = StudentsGroupMapper.StudentsGroupToStudentsGroupForReadDto(studentsGroup);
+
+            return mappedStudentsGroup;
         }
-        return false;
+        else
+            return new NotFoundError(nameof(StudentsGroup));
+    }
+
+    public async Task<Result> UpdateAsync(int id, string newName)
+    {
+        var studentsGroup = await _studentsGroupRepository.GetByIdAsync(id);
+
+        if (studentsGroup is not null)
+        {
+            studentsGroup.GroupName = newName;
+
+            _studentsGroupRepository.Update(studentsGroup);
+            await _studentsGroupRepository.SaveChangesAsync();
+
+            return Result.Ok();
+        }
+        else
+            return new NotFoundError(nameof(StudentsGroup));
     }
 }

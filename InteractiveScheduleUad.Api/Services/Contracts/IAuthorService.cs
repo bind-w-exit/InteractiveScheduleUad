@@ -1,17 +1,18 @@
-﻿using InteractiveScheduleUad.Api.Models;
+﻿using FluentResults;
+using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Models.Dtos;
 
 namespace InteractiveScheduleUad.Api.Services.Contracts;
 
 public interface IAuthorService
 {
-    Task<Author> CreateAsync(AuthorForWriteDto authorForWriteDto);
+    Task<Result<Author>> CreateAsync(AuthorForWriteDto authorForWriteDto);
 
-    Task<IEnumerable<AuthorForReadDto>> GetAllAsync();
+    Task<Result<IEnumerable<AuthorForReadDto>>> GetAllAsync();
 
-    Task<Author?> GetByIdAsync(int id);
+    Task<Result<Author>> GetByIdAsync(int id);
 
-    Task<bool> UpdateAsync(int id, AuthorForWriteDto authorForWriteDto);
+    Task<Result> UpdateAsync(int id, AuthorForWriteDto authorForWriteDto);
 
-    Task<bool> DeleteAsync(int id);
+    Task<Result> DeleteAsync(int id);
 }

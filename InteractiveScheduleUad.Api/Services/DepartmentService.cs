@@ -1,4 +1,6 @@
-﻿using InteractiveScheduleUad.Api.Mappers;
+﻿using FluentResults;
+using InteractiveScheduleUad.Api.Errors;
+using InteractiveScheduleUad.Api.Mappers;
 using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Models.Dtos;
 using InteractiveScheduleUad.Api.Repositories.Contracts;
@@ -15,7 +17,7 @@ public class DepartmentService : IDepartmentService
         _departmentRepository = departmentRepository;
     }
 
-    public async Task<Department> CreateAsync(DepartmentForWriteDto departmentCreateDto)
+    public async Task<Result<Department>> CreateAsync(DepartmentForWriteDto departmentCreateDto)
     {
         Department department = DepartmentMapper.DepartmentForWriteDtoToDepartment(departmentCreateDto);
 
@@ -25,40 +27,52 @@ public class DepartmentService : IDepartmentService
         return department;
     }
 
-    public async Task<bool> DeleteAsync(int id)
+    public async Task<Result> DeleteAsync(int id)
     {
         var department = await _departmentRepository.GetByIdAsync(id);
+
         if (department is not null)
         {
             _departmentRepository.Delete(department);
             await _departmentRepository.SaveChangesAsync();
-            return true;
+
+            return Result.Ok();
         }
-        return false;
+        else
+            return new NotFoundError(nameof(Department));
     }
 
-    public async Task<IEnumerable<Department>> GetAllAsync()
+    public async Task<Result<IEnumerable<Department>>> GetAllAsync()
     {
-        return await _departmentRepository.GetAllAsync();
+        var departments = await _departmentRepository.GetAllAsync();
+
+        return Result.Ok(departments);
     }
 
-    public async Task<Department?> GetByIdAsync(int id)
+    public async Task<Result<Department>> GetByIdAsync(int id)
     {
-        return await _departmentRepository.GetByIdAsync(id);
+        var department = await _departmentRepository.GetByIdAsync(id);
+
+        if (department is not null)
+            return department;
+        else
+            return new NotFoundError(nameof(Department));
     }
 
-    public async Task<bool> UpdateAsync(int id, DepartmentForWriteDto departmentCreateDto)
+    public async Task<Result> UpdateAsync(int id, DepartmentForWriteDto departmentCreateDto)
     {
-        var departmentFromDb = await _departmentRepository.GetByIdAsync(id);
-        if (departmentFromDb is not null)
+        var department = await _departmentRepository.GetByIdAsync(id);
+
+        if (department is not null)
         {
-            DepartmentMapper.DepartmentForWriteDtoToDepartment(departmentCreateDto, departmentFromDb);
+            DepartmentMapper.DepartmentForWriteDtoToDepartment(departmentCreateDto, department);
 
-            _departmentRepository.Update(departmentFromDb);
+            _departmentRepository.Update(department);
             await _departmentRepository.SaveChangesAsync();
 
-            return true;
+            return Result.Ok();
         }
-        return false;
+        else
+            return new NotFoundError(nameof(Department));
     }
 }

@@ -1,4 +1,5 @@
-﻿using InteractiveScheduleUad.Api.Models;
+﻿using InteractiveScheduleUad.Api.Extensions;
+using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Services.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -27,9 +28,12 @@ public class SubjectController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<Subject>), (int)HttpStatusCode.OK)]
     public async Task<ActionResult<IEnumerable<Subject>>> Get()
     {
-        IEnumerable<Subject> subjects = await _subjectService.GetAllAsync();
+        var result = await _subjectService.GetAllAsync();
 
-        return Ok(subjects);
+        if (result.IsFailed)
+            return result.Errors.First().ToObjectResult();
+        else
+            return Ok(result.Value);
     }
 
     // GET api/<SubjectController>/5
@@ -45,12 +49,12 @@ public class SubjectController : ControllerBase
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult<Subject>> Get(int id)
     {
-        Subject? subject = await _subjectService.GetByIdAsync(id);
+        var result = await _subjectService.GetAllAsync();
 
-        if (subject is null)
-            return NotFound("Subject with the specified ID was not found");
+        if (result.IsFailed)
+            return result.Errors.First().ToObjectResult();
         else
-            return Ok(subject);
+            return Ok(result.Value);
     }
 
     // POST api/<SubjectController>
@@ -65,9 +69,13 @@ public class SubjectController : ControllerBase
     [ProducesResponseType(typeof(Subject), (int)HttpStatusCode.Created)]
     public async Task<ActionResult<Subject>> Post([FromBody] string subjectName)
     {
-        Subject subject = await _subjectService.CreateAsync(subjectName);
+        var result = await _subjectService.CreateAsync(subjectName);
 
-        return CreatedAtAction(nameof(Get), new { id = subject.Id }, subject);
+        if (result.IsFailed)
+            return result.Errors.First().ToObjectResult();
+
+        var createdSubject = result.Value;
+        return CreatedAtAction(nameof(Get), new { id = createdSubject.Id }, createdSubject);
     }
 
     // PUT api/<SubjectController>/5
@@ -85,10 +93,10 @@ public class SubjectController : ControllerBase
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult> Put(int id, [FromBody] string newSubjectName)
     {
-        bool success = await _subjectService.UpdateAsync(id, newSubjectName);
+        var result = await _subjectService.UpdateAsync(id, newSubjectName);
 
-        if (!success)
-            return NotFound("Subject with the specified ID was not found");
+        if (result.IsFailed)
+            return result.Errors.First().ToObjectResult();
         else
             return Ok();
     }
@@ -106,10 +114,10 @@ public class SubjectController : ControllerBase
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult> Delete(int id)
     {
-        bool success = await _subjectService.DeleteAsync(id);
+        var result = await _subjectService.DeleteAsync(id);
 
-        if (!success)
-            return NotFound("Subject with the specified ID was not found");
+        if (result.IsFailed)
+            return result.Errors.First().ToObjectResult();
         else
             return Ok();
     }

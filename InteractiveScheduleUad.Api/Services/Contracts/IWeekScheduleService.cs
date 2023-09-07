@@ -1,12 +1,13 @@
-﻿using InteractiveScheduleUad.Api.Models.Dtos;
+﻿using FluentResults;
+using InteractiveScheduleUad.Api.Models.Dtos;
 
 namespace InteractiveScheduleUad.Api.Services.Contracts;
 
 public interface IWeekScheduleService
 {
-    Task<WeekScheduleForReadDto?> CreateAsync(int studentsGroupId, WeekScheduleForWriteDto weekScheduleForWriteDto, bool IsSecondWeek);
+    Task<Result<WeekScheduleForReadDto>> CreateAsync(int studentsGroupId, WeekScheduleForWriteDto weekScheduleForWriteDto, bool IsSecondWeek);
 
-    Task<StudentsGroupForWriteDto?> GetByIdAsync(int studentsGroupId);
+    Task<Result<StudentsGroupForWriteDto>> GetByIdAsync(int studentsGroupId);
 
-    Task<bool> DeleteAsync(int studentsGroupId, bool IsSecondWeek);
+    Task<Result> DeleteAsync(int studentsGroupId, bool IsSecondWeek);
 }

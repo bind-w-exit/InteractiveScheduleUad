@@ -1,17 +1,18 @@
-﻿using InteractiveScheduleUad.Api.Models;
+﻿using FluentResults;
+using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Models.Dtos;
 
 namespace InteractiveScheduleUad.Api.Services.Contracts;
 
 public interface ITeacherService
 {
-    Task<Teacher> CreateAsync(TeacherForWriteDto teacherForWriteDto);
+    Task<Result<Teacher>> CreateAsync(TeacherForWriteDto teacherForWriteDto);
 
-    Task<IEnumerable<Teacher>> GetAllAsync();
+    Task<Result<IEnumerable<Teacher>>> GetAllAsync();
 
-    Task<Teacher?> GetByIdAsync(int id);
+    Task<Result<Teacher>> GetByIdAsync(int id);
 
-    Task<bool> UpdateAsync(int id, TeacherForWriteDto teacherForWriteDto);
+    Task<Result> UpdateAsync(int id, TeacherForWriteDto teacherForWriteDto);
 
-    Task<bool> DeleteAsync(int id);
+    Task<Result> DeleteAsync(int id);
 }

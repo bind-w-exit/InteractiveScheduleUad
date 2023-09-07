@@ -36,7 +36,7 @@ public static class ErrorToObjectResultExtensions
         return validationProblemDetails;
     }
 
-    private static ProblemDetails ToProblemDetails(this EntityAlreadyExistsError entityAlreadyExistsError) 
+    private static ProblemDetails ToProblemDetails(this EntityAlreadyExistsError entityAlreadyExistsError)
     {
         return new ProblemDetails()
         {
@@ -56,7 +56,7 @@ public static class ErrorToObjectResultExtensions
         };
     }
 
-    private static ProblemDetails ToProblemDetails(this ForbiddenError forbiddenError) 
+    private static ProblemDetails ToProblemDetails(this ForbiddenError forbiddenError)
     {
         return new ProblemDetails()
         {

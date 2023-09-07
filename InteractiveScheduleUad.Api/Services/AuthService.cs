@@ -45,10 +45,12 @@ public class AuthService : IAuthService
         await _userRepository.InsertAsync(user);
         await _userRepository.SaveChangesAsync();
 
-        return UserMapper.UserToUserForReadDto(user);
+        var mappedUser = UserMapper.UserToUserForReadDto(user);
+
+        return mappedUser;
     }
 
-    public async Task<bool> DeleteAsync(string username)
+    public async Task<Result> DeleteAsync(string username)
     {
         var user = await _userRepository.SingleOrDefaultAsync(u => u.Username == username);
 
@@ -56,60 +58,59 @@ public class AuthService : IAuthService
         {
             _userRepository.Delete(user);
             await _userRepository.SaveChangesAsync();
-            return true;
+
+            return Result.Ok();
         }
-        return false;
+        else
+            return new NotFoundError(nameof(User));
     }
 
-    public async Task<IEnumerable<UserForReadDto>> GetAllAsync()
+    public async Task<Result<IEnumerable<UserForReadDto>>> GetAllAsync()
     {
         var users = await _userRepository.GetAllAsync(true);
+        var mappedUsers = users.Select(UserMapper.UserToUserForReadDto);
 
-        List<UserForReadDto> usersForReadDto = new();
-        foreach (var user in users)
-        {
-            usersForReadDto.Add(UserMapper.UserToUserForReadDto(user));
-        }
-
-        return usersForReadDto;
+        return Result.Ok(mappedUsers);
     }
 
-    public async Task<bool> UpdateAsync(string username, UserForRegisterDto userForRegisterDto)
+    public async Task<Result> UpdateAsync(string username, UserForRegisterDto userForRegisterDto)
     {
-        var userFromDb = await _userRepository.SingleOrDefaultAsync(u => u.Username == username);
-        if (userFromDb is not null)
+        var user = await _userRepository.SingleOrDefaultAsync(u => u.Username == username);
+
+        if (user is not null)
         {
             _hashService.CreatePasswordHash(userForRegisterDto.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
-            userFromDb.Username = userForRegisterDto.Username;
-            userFromDb.PasswordHash = passwordHash;
-            userFromDb.PasswordSalt = passwordSalt;
-            userFromDb.UserRole = userForRegisterDto.UserRole;
+            user.Username = userForRegisterDto.Username;
+            user.PasswordHash = passwordHash;
+            user.PasswordSalt = passwordSalt;
+            user.UserRole = userForRegisterDto.UserRole;
 
-            _userRepository.Update(userFromDb);
+            _userRepository.Update(user);
             await _userRepository.SaveChangesAsync();
 
-            return true;
+            return Result.Ok();
         }
-        return false;
+        else
+            return new NotFoundError(nameof(User));
     }
 
     public async Task<Result<AuthenticatedResponse>> Login(UserForLoginDto userForLoginDto)
     {
-        var userFromDb = await _userRepository.SingleOrDefaultAsync(u => u.Username == userForLoginDto.UserName);
+        var user = await _userRepository.SingleOrDefaultAsync(u => u.Username == userForLoginDto.UserName);
 
-        if (userFromDb is null)
+        if (user is null)
             return new NotFoundError(nameof(User));
 
-        if (!_hashService.VerifyPasswordHash(userForLoginDto.Password, userFromDb.PasswordHash, userFromDb.PasswordSalt))
+        if (!_hashService.VerifyPasswordHash(userForLoginDto.Password, user.PasswordHash, user.PasswordSalt))
             return new UnauthorizedError("Wrong password");
 
-        AuthenticatedResponse response = _tokenService.GenerateAuthenticatedResponse(userFromDb);
+        AuthenticatedResponse response = _tokenService.GenerateAuthenticatedResponse(user);
 
         return response;
     }
 
-    public async Task<Result<bool>> Logout(ClaimsPrincipal claims)
+    public async Task<Result> Logout(ClaimsPrincipal claims)
     {
         var jtiString = claims.FindFirstValue(JwtRegisteredClaimNames.Jti);
         if (string.IsNullOrEmpty(jtiString) || Guid.TryParse(jtiString, out var jti))
@@ -127,7 +128,7 @@ public class AuthService : IAuthService
         var revokedToken = await _revokedTokenRepository.SingleOrDefaultAsync(t => t.Jti == jti);
         if (revokedToken is not null)
         {
-            return true;
+            return Result.Ok();
         }
 
         // Add refresh and all its access tokens to the blacklist.
@@ -139,7 +140,7 @@ public class AuthService : IAuthService
         });
         await _revokedTokenRepository.SaveChangesAsync();
 
-        return true;
+        return Result.Ok();
     }
 
     public async Task<Result<string>> RefreshToken(ClaimsPrincipal claims)
