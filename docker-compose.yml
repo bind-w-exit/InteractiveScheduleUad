@@ -19,9 +19,14 @@ services:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASS}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
     networks:
       - mynetwork
 
+volumes:
+  pgdata:
+  
 networks:
   mynetwork:
     driver: bridge
