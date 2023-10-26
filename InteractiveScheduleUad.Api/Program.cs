@@ -128,6 +128,11 @@ builder.Services.AddSingleton<ITokenService, TokenService>();
 
 var app = builder.Build();
 
+app.UseCors(builder => builder
+           .AllowAnyOrigin()
+           .AllowAnyMethod()
+           .AllowAnyHeader());
+
 using var scope = app.Services.CreateScope();
 
 app.UseSwagger();
