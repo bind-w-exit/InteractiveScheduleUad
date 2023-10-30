@@ -138,11 +138,8 @@ using var scope = app.Services.CreateScope();
 app.UseSwagger();
 app.UseSwaggerUI();
 
-if (app.Environment.IsDevelopment())
-{
-    var apiContext = scope.ServiceProvider.GetRequiredService<InteractiveScheduleUadApiDbContext>();
-    apiContext.Database.Migrate();
-}
+var apiContext = scope.ServiceProvider.GetRequiredService<InteractiveScheduleUadApiDbContext>();
+apiContext.Database.Migrate();
 
 await CreateFirstUserIfEmpty(scope.ServiceProvider.GetRequiredService<IAuthService>(), scope.ServiceProvider.GetRequiredService<IUserRepository>(), app.Configuration);
 
