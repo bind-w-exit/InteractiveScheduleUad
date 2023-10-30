@@ -156,10 +156,10 @@ app.Run();
 
 static string GetDbConnectionString(IConfiguration configuration)
 {
-    var host = configuration["DB_HOST"];
-    var database = configuration["DB_NAME"];
-    var username = configuration["DB_USER"];
-    var password = configuration["DB_PASS"];
+    var host = configuration["DATABASE_HOST"];
+    var database = configuration["DATABASE_NAME"];
+    var username = configuration["DATABASE_USER"];
+    var password = configuration["DATABASE_PASSWORD"];
     return $"Host={host};Database={database};Username={username};Password={password}";
 }
 

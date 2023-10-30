@@ -22,5 +22,5 @@ jobs:
         script: |
           cd /home/bind/InteractiveScheduleUad
           git pull origin main
-          docker compose -p interactive-schedule-uad-backend down
-          docker compose -p interactive-schedule-uad-backend up --build -d
+          docker compose -f docker-compose.yml -f docker-compose.prod.yml -p interactive-schedule-uad-backend down
+          docker compose -f docker-compose.yml -f docker-compose.prod.yml -p interactive-schedule-uad-backend up --build -d
