@@ -65,7 +65,8 @@ builder.Services.AddSwaggerGen(options =>
 var connectionString = GetDbConnectionString(builder.Configuration);
 //var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-if (CheckDbConnection(connectionString))
+// connect to npgsql db. Exit on failure
+if (CheckNpgsqlDbConnection(connectionString))
 {
     builder.Services.AddDbContext<DbContext, InteractiveScheduleUadApiDbContext>(options =>
         options.UseNpgsql(connectionString));
@@ -99,10 +100,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 // Authorization
 AddAuthorizationPolicies(builder.Services);
 
-// Validation
+// Validation (for rooms only, for now)
 builder.Services.AddValidatorsFromAssemblyContaining<RoomForWriteDtoValidator>();
 
-// TODO: Change to AddScoped
+// add transient services for repositories. Transient services are created each time they are requested
+// TODO: Change to AddScoped. Scoped services are created once per scope
 builder.Services.AddTransient<ISubjectRepository, SubjectRepository>();
 builder.Services.AddTransient<IDepartmentRepository, DepartmentRepository>();
 builder.Services.AddTransient<IStudentsGroupRepository, StudentsGroupRepository>();
@@ -113,6 +115,7 @@ builder.Services.AddTransient<IRevokedTokenRepository, RevokedTokenRepository>()
 builder.Services.AddTransient<IAuthorRepository, AuthorRepository>();
 builder.Services.AddTransient<IArticleRepository, ArticleRepository>();
 
+// add transient services for... services? Those build on top of repositories
 builder.Services.AddTransient<IDepartmentService, DepartmentService>();
 builder.Services.AddTransient<IStudentsGroupService, StudentsGroupService>();
 builder.Services.AddTransient<IWeekScheduleService, WeekScheduleService>();
@@ -123,11 +126,13 @@ builder.Services.AddTransient<IAuthService, AuthService>();
 builder.Services.AddTransient<IAuthorService, AuthorService>();
 builder.Services.AddTransient<IArticleService, ArticleService>();
 
+// add auth related services
 builder.Services.AddSingleton<IHashService, HashService>();
 builder.Services.AddSingleton<ITokenService, TokenService>();
 
 var app = builder.Build();
 
+// enable cross-origin requests
 app.UseCors(builder => builder
            .AllowAnyOrigin()
            .AllowAnyMethod()
@@ -138,19 +143,25 @@ using var scope = app.Services.CreateScope();
 app.UseSwagger();
 app.UseSwaggerUI();
 
+// about migrations:
+// https://learn.microsoft.com/en-us/ef/core/managing-schemas/migrations/?tabs=dotnet-core-cli
 var apiContext = scope.ServiceProvider.GetRequiredService<InteractiveScheduleUadApiDbContext>();
 apiContext.Database.Migrate();
 
-await CreateFirstUserIfEmpty(scope.ServiceProvider.GetRequiredService<IAuthService>(), scope.ServiceProvider.GetRequiredService<IUserRepository>(), app.Configuration);
+var authService = scope.ServiceProvider.GetRequiredService<IAuthService>();
+var userRepositoryService = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+await CreateFirstUserIfEmpty(authService, userRepositoryService, app.Configuration);
 
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
+// maps annotated controllers to routes, I guess?
 app.MapControllers();
 
 app.Run();
 
+// extracts connection string bits from configuration (.env file, container scenario) and returns them stringed together
 static string GetDbConnectionString(IConfiguration configuration)
 {
     var host = configuration["DATABASE_HOST"];
@@ -160,7 +171,7 @@ static string GetDbConnectionString(IConfiguration configuration)
     return $"Host={host};Database={database};Username={username};Password={password}";
 }
 
-static bool CheckDbConnection(string connectionString)
+static bool CheckNpgsqlDbConnection(string connectionString)
 {
     int maxAttempts = 10;
     int currentAttempt = 0;
@@ -194,8 +205,9 @@ static void AddAuthorizationPolicies(IServiceCollection services)
     {
         services.AddAuthorization(options =>
         {
-            options.AddPolicy(role.ToString(), policy =>
-                policy.RequireRole(role.ToString()));
+            string roleStr = role.ToString();
+            options.AddPolicy(roleStr, policy =>
+                policy.RequireRole(roleStr));
         });
     }
 
@@ -206,11 +218,14 @@ static void AddAuthorizationPolicies(IServiceCollection services)
     });
 }
 
+// creates admin user in case none exists
 static async Task CreateFirstUserIfEmpty(IAuthService authService, IUserRepository userRepository, IConfiguration configuration)
 {
     var admin = await userRepository.FirstOrDefaultAsync(user => user.UserRole == UserRole.Admin);
     if (admin is null)
     {
-        await authService.Register(new() { Username = configuration["ADMIN_USERNAME"], Password = configuration["ADMIN_PASSWORD"] });
+        var adminUsername = configuration["ADMIN_USERNAME"];
+        var adminPassword = configuration["ADMIN_PASSWORD"];
+        await authService.Register(new() { Username = adminUsername, Password = adminPassword });
     }
 }

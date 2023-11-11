@@ -65,7 +65,7 @@ public class ScheduleController : ControllerBase
 
     // DELETE api/<ScheduleController>/5
     /// <summary>
-    /// Deletes a firs or second week schedule for students group
+    /// Deletes a first or second week schedule for students group
     /// </summary>
     /// <param name="studentsGroupId">Students group ID</param>
     /// <param name="isSecondWeek">Specifies which week to delete, the first or the second. By default, the first</param>
