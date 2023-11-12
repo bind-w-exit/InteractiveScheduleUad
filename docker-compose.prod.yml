@@ -14,3 +14,9 @@ services:
       - "${HTTPS_PORT}:443"
     volumes:
       - ${CERT_FOLDER_PATH}:/app/certs:ro
+    restart: unless-stopped  
+  db:
+    restart: unless-stopped  
+  
+      
+  
