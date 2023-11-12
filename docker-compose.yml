@@ -8,6 +8,7 @@ services:
         dockerfile: Dockerfile
     env_file:
       - .env
+    restart: unless-stopped
     depends_on:
       - db
     networks:
@@ -19,6 +20,7 @@ services:
       POSTGRES_DB: ${DATABASE_NAME}
       POSTGRES_USER: ${DATABASE_USER}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    restart: unless-stopped
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:

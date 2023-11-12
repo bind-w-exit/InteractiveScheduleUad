@@ -59,6 +59,8 @@ builder.Services.AddSwaggerGen(options =>
 
     var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
+    // note: generation of documentation file has to be enabled in project properties:
+    // Project properties -> Build -> Output -> Documentation file
 });
 
 // Database
@@ -161,7 +163,7 @@ app.MapControllers();
 
 app.Run();
 
-// extracts connection string bits from configuration (.env file, container scenario) and returns them stringed together
+// extracts connection string bits from configuration (.env file, container in compose scenario) and returns them stringed together
 static string GetDbConnectionString(IConfiguration configuration)
 {
     var host = configuration["DATABASE_HOST"];
@@ -181,6 +183,7 @@ static bool CheckNpgsqlDbConnection(string connectionString)
     {
         try
         {
+            Console.WriteLine($"Using this conn string: {connectionString}");
             using NpgsqlConnection connection = new(connectionString);
             connection.Open();
 
