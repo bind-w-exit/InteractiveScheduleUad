@@ -16,6 +16,9 @@ using System.Data;
 using System.Reflection;
 using System.Text;
 
+// is necessary for in-memory scenario to work
+DotNetEnv.Env.TraversePath().Load();
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -67,16 +70,29 @@ builder.Services.AddSwaggerGen(options =>
 var connectionString = GetDbConnectionString(builder.Configuration);
 //var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-// connect to npgsql db. Exit on failure
-if (CheckNpgsqlDbConnection(connectionString))
+// the SHOULD_USE_IN_MEMORY_DB is set by one of launch profiles.
+bool shouldUseInMemoryDb = builder.Configuration["SHOULD_USE_IN_MEMORY_DB"] == "true";
+
+if (shouldUseInMemoryDb)
 {
+    // add database (in-memory)
+    Console.WriteLine("Using in-memory database");
     builder.Services.AddDbContext<DbContext, InteractiveScheduleUadApiDbContext>(options =>
-        options.UseNpgsql(connectionString));
+           options.UseInMemoryDatabase("TodoList"));
 }
 else
 {
-    Console.WriteLine("Failed to connect to the database after multiple attempts. Exiting...");
-    Environment.Exit(1);
+    // connect to npgsql db. Exit on failure
+    if (CheckNpgsqlDbConnection(connectionString))
+    {
+        builder.Services.AddDbContext<DbContext, InteractiveScheduleUadApiDbContext>(options =>
+            options.UseNpgsql(connectionString));
+    }
+    else
+    {
+        Console.WriteLine("Failed to connect to the database after multiple attempts. Exiting...");
+        Environment.Exit(1);
+    }
 }
 
 // Authentication
@@ -145,10 +161,14 @@ using var scope = app.Services.CreateScope();
 app.UseSwagger();
 app.UseSwaggerUI();
 
-// about migrations:
-// https://learn.microsoft.com/en-us/ef/core/managing-schemas/migrations/?tabs=dotnet-core-cli
-var apiContext = scope.ServiceProvider.GetRequiredService<InteractiveScheduleUadApiDbContext>();
-apiContext.Database.Migrate();
+// do not use migrations for in-memory db
+if (!shouldUseInMemoryDb)
+{
+    // about migrations:
+    // https://learn.microsoft.com/en-us/ef/core/managing-schemas/migrations/?tabs=dotnet-core-cli
+    var apiContext = scope.ServiceProvider.GetRequiredService<InteractiveScheduleUadApiDbContext>();
+    apiContext.Database.Migrate();
+}
 
 var authService = scope.ServiceProvider.GetRequiredService<IAuthService>();
 var userRepositoryService = scope.ServiceProvider.GetRequiredService<IUserRepository>();

@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="DotNetEnv" Version="2.5.0" />
     <PackageReference Include="FluentResults" Version="3.15.2" />
     <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.10" />
@@ -24,6 +25,7 @@
     <PackageReference Include="Riok.Mapperly" Version="3.1.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
     <PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="7.0.8" />
+	<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="7.0.10" />
   </ItemGroup>
 
   <PropertyGroup>
