@@ -110,16 +110,17 @@ public class AuthService : IAuthService
         return response;
     }
 
+    // TODO: Annotate
     public async Task<Result> Logout(ClaimsPrincipal claims)
     {
         var jtiString = claims.FindFirstValue(JwtRegisteredClaimNames.Jti);
-        if (string.IsNullOrEmpty(jtiString) || Guid.TryParse(jtiString, out var jti))
+        if (string.IsNullOrEmpty(jtiString) || !Guid.TryParse(jtiString, out var jti))
         {
             return new UnauthorizedError("The JTI is not a valid GUID.");
         }
 
         var tokenExpiresString = claims.FindFirstValue(JwtRegisteredClaimNames.Exp);
-        if (string.IsNullOrEmpty(tokenExpiresString) || long.TryParse(tokenExpiresString, out long tokenExpiresSeconds))
+        if (string.IsNullOrEmpty(tokenExpiresString) || !long.TryParse(tokenExpiresString, out long tokenExpiresSeconds))
         {
             return new UnauthorizedError("The token expiry time is not valid.");
         }
@@ -143,16 +144,17 @@ public class AuthService : IAuthService
         return Result.Ok();
     }
 
+    // TODO: Annotate
     public async Task<Result<string>> RefreshToken(ClaimsPrincipal claims)
     {
         var jtiString = claims.FindFirstValue(JwtRegisteredClaimNames.Jti);
-        if (string.IsNullOrEmpty(jtiString) || Guid.TryParse(jtiString, out Guid jti))
+        if (string.IsNullOrEmpty(jtiString) || !Guid.TryParse(jtiString, out Guid jti))
         {
             return new UnauthorizedError("The JTI is not a valid GUID.");
         }
 
         var userId = claims.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userId) || int.TryParse(userId, out int userIdValue))
+        if (string.IsNullOrEmpty(userId) || !int.TryParse(userId, out int userIdValue))
         {
             return new UnauthorizedError("The user ID is not a valid integer.");
         }

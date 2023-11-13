@@ -1,4 +1,5 @@
-﻿using InteractiveScheduleUad.Api.Extensions;
+﻿using FluentResults;
+using InteractiveScheduleUad.Api.Extensions;
 using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Models.Dtos;
 using InteractiveScheduleUad.Api.Services.AuthAndAuthorizationServices.Contracts;
@@ -25,11 +26,7 @@ public class AuthController : ControllerBase
     public async Task<ActionResult<UserForReadDto>> Register(UserForRegisterDto userForRegisterDto)
     {
         var result = await _authService.Register(userForRegisterDto);
-
-        if (result.IsFailed)
-            return result.Errors.First().ToObjectResult();
-
-        return Ok(result.Value);
+        return HandleResult(result);
     }
 
     [HttpPost("Login")]
@@ -40,11 +37,7 @@ public class AuthController : ControllerBase
     public async Task<ActionResult<AuthenticatedResponse>> Login(UserForLoginDto userForLoginDto)
     {
         var result = await _authService.Login(userForLoginDto);
-
-        if (result.IsFailed)
-            return result.Errors.First().ToObjectResult();
-
-        return Ok(result.Value);
+        return HandleResult(result);
     }
 
     [HttpDelete("Logout")]
@@ -54,11 +47,7 @@ public class AuthController : ControllerBase
     public async Task<ActionResult> Logout()
     {
         var result = await _authService.Logout(User);
-
-        if (result.IsFailed)
-            return result.Errors.First().ToObjectResult();
-
-        return Ok();
+        return HandleResult(result);
     }
 
     [HttpGet("RefreshToken")]
@@ -68,11 +57,20 @@ public class AuthController : ControllerBase
     public async Task<ActionResult<string>> RefreshToken()
     {
         var result = await _authService.RefreshToken(User);
+        return HandleResult(result);
+    }
 
+    private ActionResult HandleResult<T>(Result<T> result)
+    {
         if (result.IsFailed)
             return result.Errors.First().ToObjectResult();
 
         return Ok(result.Value);
+    }
+
+    private ActionResult HandleResult(Result result)
+    {
+        return HandleResult<object>(result);
     }
 
     // TODO: Add DELETE, GET all, and PUT methods

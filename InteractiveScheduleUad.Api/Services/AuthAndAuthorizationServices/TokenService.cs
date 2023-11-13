@@ -41,6 +41,7 @@ public class TokenService : ITokenService
         out DateTime accessTokenExpires,
         out DateTime refreshTokenExpires)
     {
+        // jti = json token id
         pairJti = Guid.NewGuid();
         accessTokenExpires = DateTime.UtcNow.AddMinutes(5);
         refreshTokenExpires = DateTime.UtcNow.AddDays(14);
@@ -82,7 +83,7 @@ public class TokenService : ITokenService
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_key));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-        var tokeOptions = new JwtSecurityToken(
+        var tokenOptions = new JwtSecurityToken(
             claims: claims,
             issuer: _issuer,
             audience: _audience,
@@ -90,7 +91,7 @@ public class TokenService : ITokenService
             signingCredentials: credentials
         );
 
-        var tokenString = new JwtSecurityTokenHandler().WriteToken(tokeOptions);
+        var tokenString = new JwtSecurityTokenHandler().WriteToken(tokenOptions);
         return tokenString;
     }
 

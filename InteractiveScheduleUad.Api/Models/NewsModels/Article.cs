@@ -16,6 +16,7 @@ public class Article
 
     public DateTime Published { get; set; }
 
+    // TODO: Annotate
     public int AuthorId { get; set; }
 
     public Author Author { get; set; }

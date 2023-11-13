@@ -77,6 +77,7 @@ public class DepartmentController : ControllerBase
             return result.Errors.First().ToObjectResult();
 
         var createdDepartment = result.Value;
+        // TODO: Annotate
         return CreatedAtAction(nameof(Get), new { id = createdDepartment.Id }, createdDepartment);
     }
 

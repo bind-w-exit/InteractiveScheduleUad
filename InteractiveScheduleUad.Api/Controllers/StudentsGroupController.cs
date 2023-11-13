@@ -36,6 +36,7 @@ public class StudentsGroupController : ControllerBase
             return Ok(result.Value);
     }
 
+    // TODO: implement retrieval by Id
     // GET api/<StudentsGroupController>/5
     /// <summary>
     /// Retrieves a students group by its ID
