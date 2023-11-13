@@ -1,8 +1,8 @@
-﻿using InteractiveScheduleUad.Api.Services.Contracts;
+﻿using InteractiveScheduleUad.Api.Services.AuthAndAuthorizationServices.Contracts;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace InteractiveScheduleUad.Api.Services;
+namespace InteractiveScheduleUad.Api.Services.AuthAndAuthorizationServices;
 
 public class HashService : IHashService
 {

@@ -4,11 +4,11 @@ using InteractiveScheduleUad.Api.Mappers;
 using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Models.Dtos;
 using InteractiveScheduleUad.Api.Repositories.Contracts;
-using InteractiveScheduleUad.Api.Services.Contracts;
+using InteractiveScheduleUad.Api.Services.AuthAndAuthorizationServices.Contracts;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
-namespace InteractiveScheduleUad.Api.Services;
+namespace InteractiveScheduleUad.Api.Services.AuthAndAuthorizationServices;
 
 public class AuthService : IAuthService
 {

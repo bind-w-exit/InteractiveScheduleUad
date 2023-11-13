@@ -1,6 +1,6 @@
 ﻿using InteractiveScheduleUad.Api.Models;
 
-namespace InteractiveScheduleUad.Api.Services.Contracts;
+namespace InteractiveScheduleUad.Api.Services.AuthAndAuthorizationServices.Contracts;
 
 public interface ITokenService
 {

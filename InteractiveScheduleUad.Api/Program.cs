@@ -4,6 +4,8 @@ using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Repositories;
 using InteractiveScheduleUad.Api.Repositories.Contracts;
 using InteractiveScheduleUad.Api.Services;
+using InteractiveScheduleUad.Api.Services.AuthAndAuthorizationServices;
+using InteractiveScheduleUad.Api.Services.AuthAndAuthorizationServices.Contracts;
 using InteractiveScheduleUad.Api.Services.Contracts;
 using InteractiveScheduleUad.Api.Validators;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -16,7 +18,7 @@ using System.Data;
 using System.Reflection;
 using System.Text;
 
-// is necessary for in-memory scenario to work
+// is necessary for in-memory DB scenario to work locally, on windows
 DotNetEnv.Env.TraversePath().Load();
 
 var builder = WebApplication.CreateBuilder(args);
@@ -78,7 +80,7 @@ if (shouldUseInMemoryDb)
     // add database (in-memory)
     Console.WriteLine("Using in-memory database");
     builder.Services.AddDbContext<DbContext, InteractiveScheduleUadApiDbContext>(options =>
-           options.UseInMemoryDatabase("TodoList"));
+           options.UseInMemoryDatabase("SchedulesDB"));
 }
 else
 {

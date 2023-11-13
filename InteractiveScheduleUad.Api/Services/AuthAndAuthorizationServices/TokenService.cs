@@ -1,11 +1,11 @@
 ﻿using InteractiveScheduleUad.Api.Models;
-using InteractiveScheduleUad.Api.Services.Contracts;
+using InteractiveScheduleUad.Api.Services.AuthAndAuthorizationServices.Contracts;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace InteractiveScheduleUad.Api.Services;
+namespace InteractiveScheduleUad.Api.Services.AuthAndAuthorizationServices;
 
 public class TokenService : ITokenService
 {

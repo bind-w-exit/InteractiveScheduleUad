@@ -1,7 +1,7 @@
 ﻿using InteractiveScheduleUad.Api.Extensions;
 using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Models.Dtos;
-using InteractiveScheduleUad.Api.Services.Contracts;
+using InteractiveScheduleUad.Api.Services.AuthAndAuthorizationServices.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;

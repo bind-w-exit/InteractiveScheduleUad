@@ -3,7 +3,7 @@ using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Models.Dtos;
 using System.Security.Claims;
 
-namespace InteractiveScheduleUad.Api.Services.Contracts;
+namespace InteractiveScheduleUad.Api.Services.AuthAndAuthorizationServices.Contracts;
 
 public interface IAuthService
 {

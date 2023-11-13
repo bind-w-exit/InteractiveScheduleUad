@@ -14,6 +14,8 @@ public abstract class RepositoryBase<T> : IRepositoryBase<T>
         Context = context ?? throw new ArgumentNullException(nameof(context));
     }
 
+    // retrieves all entities of type T from the database.
+    // If includeNestedObjects is true, it also includes related entities (also known as "navigations" in Entity Framework Core terminology).
     public async Task<IEnumerable<T>> GetAllAsync(bool includeNestedObjects = false)
     {
         if (includeNestedObjects)
@@ -22,17 +24,17 @@ public abstract class RepositoryBase<T> : IRepositoryBase<T>
             var entityType = Context.Model.FindEntityType(typeof(T));
             var navigations = entityType?.GetNavigations();
 
-            IQueryable<T> query = Context.Set<T>();
+            IQueryable<T> dbSetQueryable = Context.Set<T>();
 
             if (navigations is not null)
             {
                 foreach (var navigation in navigations)
                 {
-                    query = query.Include(navigation.Name);
+                    dbSetQueryable = dbSetQueryable.Include(navigation.Name);
                 }
             }
 
-            return await query.ToListAsync();
+            return await dbSetQueryable.ToListAsync();
         }
         else
             return await Context.Set<T>().ToListAsync();
@@ -43,21 +45,25 @@ public abstract class RepositoryBase<T> : IRepositoryBase<T>
         return await Context.Set<T>().Where(predicate).ToListAsync();
     }
 
+    // wraps matching context set method
     public virtual async Task<T?> SingleOrDefaultAsync(Expression<Func<T, bool>> predicate)
     {
         return await Context.Set<T>().SingleOrDefaultAsync(predicate);
     }
 
+    // wraps matching context set method
     public virtual async Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate)
     {
         return await Context.Set<T>().FirstOrDefaultAsync(predicate);
     }
 
+    // wraps analogous context set method
     public virtual async Task<T?> GetByIdAsync(object? id)
     {
         return await Context.Set<T>().FindAsync(id);
     }
 
+    // wraps analogous context set method
     public virtual async Task InsertAsync(T entity)
     {
         await Context.Set<T>().AddAsync(entity);
@@ -68,11 +74,13 @@ public abstract class RepositoryBase<T> : IRepositoryBase<T>
         Context.Entry(entity).State = EntityState.Modified;
     }
 
+    // wraps analogous context set method
     public virtual void Delete(T entity)
     {
         Context.Set<T>().Remove(entity);
     }
 
+    // wraps matching context method
     public virtual async Task SaveChangesAsync()
     {
         await Context.SaveChangesAsync();
@@ -81,6 +89,7 @@ public abstract class RepositoryBase<T> : IRepositoryBase<T>
     // Implement IDisposable
     private bool disposed = false;
 
+    // TODO: Annotate
     protected virtual void Dispose(bool disposing)
     {
         if (!disposed)
@@ -94,6 +103,7 @@ public abstract class RepositoryBase<T> : IRepositoryBase<T>
         }
     }
 
+    // TODO: Annotate
     public void Dispose()
     {
         Dispose(true);
