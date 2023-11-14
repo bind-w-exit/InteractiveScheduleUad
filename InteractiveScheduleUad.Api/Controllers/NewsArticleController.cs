@@ -40,7 +40,7 @@ public class NewsArticleController : ControllerBase
     // TODO: implement retrieval by Id
     // GET api/<ArticleController>/5
     /// <summary>
-    /// Retrieves a article by its ID
+    /// Retrieves an article by its ID
     /// </summary>
     /// <param name="id">Article ID</param>
     /// <response code="200">Success - Returns the article with the specified ID</response>
@@ -105,7 +105,7 @@ public class NewsArticleController : ControllerBase
 
     // DELETE api/<ArticleController>/5
     /// <summary>
-    /// Deletes a article
+    /// Deletes an article
     /// </summary>
     /// <param name="id">The ID of the article to delete</param>
     /// <response code="200">Success - Successfully deleted</response>

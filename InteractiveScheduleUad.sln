@@ -17,6 +17,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InteractiveScheduleUad.E2ETests", "InteractiveScheduleUad.E2ETests\InteractiveScheduleUad.E2ETests.csproj", "{903E861B-D492-4339-BD60-C92556FF72C1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,6 +33,10 @@ Global
 		{32A95B71-8632-4C37-A2E7-E249D9D97F5D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{32A95B71-8632-4C37-A2E7-E249D9D97F5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{32A95B71-8632-4C37-A2E7-E249D9D97F5D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{903E861B-D492-4339-BD60-C92556FF72C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{903E861B-D492-4339-BD60-C92556FF72C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{903E861B-D492-4339-BD60-C92556FF72C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{903E861B-D492-4339-BD60-C92556FF72C1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
