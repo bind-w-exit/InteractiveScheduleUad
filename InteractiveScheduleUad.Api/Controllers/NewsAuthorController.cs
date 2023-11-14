@@ -10,11 +10,11 @@ namespace InteractiveScheduleUad.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class AuthorController : ControllerBase
+public class NewsAuthorController : ControllerBase
 {
     private readonly IAuthorService _authorService;
 
-    public AuthorController(IAuthorService authorService)
+    public NewsAuthorController(IAuthorService authorService)
     {
         _authorService = authorService;
     }
@@ -104,7 +104,7 @@ public class AuthorController : ControllerBase
 
     // DELETE api/<AuthorController>/5
     /// <summary>
-    /// Deletes a author
+    /// Deletes an author
     /// </summary>
     /// <param name="id">The ID of the author to delete</param>
     /// <response code="200">Success - Successfully deleted</response>

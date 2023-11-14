@@ -10,11 +10,11 @@ namespace InteractiveScheduleUad.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class ArticleController : ControllerBase
+public class NewsArticleController : ControllerBase
 {
     private readonly IArticleService _articleService;
 
-    public ArticleController(IArticleService articleService)
+    public NewsArticleController(IArticleService articleService)
     {
         _articleService = articleService;
     }
@@ -37,6 +37,7 @@ public class ArticleController : ControllerBase
             return Ok(result.Value);
     }
 
+    // TODO: implement retrieval by Id
     // GET api/<ArticleController>/5
     /// <summary>
     /// Retrieves a article by its ID

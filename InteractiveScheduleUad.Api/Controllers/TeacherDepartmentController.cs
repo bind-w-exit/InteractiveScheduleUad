@@ -10,11 +10,11 @@ namespace InteractiveScheduleUad.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class DepartmentController : ControllerBase
+public class TeacherDepartmentController : ControllerBase
 {
     private readonly IDepartmentService _departmentService;
 
-    public DepartmentController(IDepartmentService departmentService)
+    public TeacherDepartmentController(IDepartmentService departmentService)
     {
         _departmentService = departmentService;
     }

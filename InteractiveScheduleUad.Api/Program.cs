@@ -69,8 +69,6 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 // Database
-var connectionString = GetDbConnectionString(builder.Configuration);
-//var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 // the SHOULD_USE_IN_MEMORY_DB is set by one of launch profiles.
 bool shouldUseInMemoryDb = builder.Configuration["SHOULD_USE_IN_MEMORY_DB"] == "true";
@@ -84,6 +82,9 @@ if (shouldUseInMemoryDb)
 }
 else
 {
+    var connectionString = GetDbConnectionString(builder.Configuration);
+    //var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
     // connect to npgsql db. Exit on failure
     if (CheckNpgsqlDbConnection(connectionString))
     {
