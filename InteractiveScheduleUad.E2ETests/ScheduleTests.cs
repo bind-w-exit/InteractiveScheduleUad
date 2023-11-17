@@ -66,7 +66,7 @@ public class ScheduleTests : IAsyncLifetime
 
     // POSTs a group and schedule, then GETs the group and checks whether it contains the schedule POSTed
     [Fact]
-    public async Task CreatingSchedule_CompletesAsExpected()
+    public void CreatingSchedule_CompletesAsExpected()
     {
         // to create a schedule, you need to:
         // 1. create a group
@@ -79,13 +79,13 @@ public class ScheduleTests : IAsyncLifetime
 
         // read "raw" schedule from file
         string pathToRawScheduleFile = @"Data\ІСТ-5.json";
-        var rawScheduleText = await File.ReadAllTextAsync(pathToRawScheduleFile);
+        var rawScheduleText = File.ReadAllText(pathToRawScheduleFile);
         var rawScheduleObj = JsonConvert.DeserializeObject<ScheduleFile>(rawScheduleText);
 
         Day rawScheduleMonday = rawScheduleObj.monday;
 
         // POST new group
-        var studentsGroup = await client.PostJsonAsync<string, StudentsGroupForReadDto>("StudentsGroup", "\"ІСТ-5\"");
+        var studentsGroup = client.PostJson<string, StudentsGroupForReadDto>("StudentsGroup", EncaseInQuotes("ІСТ-5"));
         var studentsGroupId = studentsGroup.Id;
 
         // act
