@@ -69,7 +69,7 @@ public class TeacherDepartmentController : ControllerBase
     [HttpPost]
     [Authorize(Roles = "Admin")]
     [ProducesResponseType(typeof(Department), (int)HttpStatusCode.Created)]
-    public async Task<ActionResult<Department>> Post([FromBody] DepartmentForWriteDto department)
+    public async Task<ActionResult<Department>> Post([FromBody] TeacherDepartmentForWriteDto department)
     {
         var result = await _departmentService.CreateAsync(department);
 
@@ -94,7 +94,7 @@ public class TeacherDepartmentController : ControllerBase
     [Authorize(Roles = "Admin")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-    public async Task<ActionResult> Put(int id, [FromBody] DepartmentForWriteDto newDepartment)
+    public async Task<ActionResult> Put(int id, [FromBody] TeacherDepartmentForWriteDto newDepartment)
     {
         var result = await _departmentService.UpdateAsync(id, newDepartment);
 

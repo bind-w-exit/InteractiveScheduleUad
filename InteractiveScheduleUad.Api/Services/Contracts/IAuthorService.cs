@@ -6,13 +6,13 @@ namespace InteractiveScheduleUad.Api.Services.Contracts;
 
 public interface IAuthorService
 {
-    Task<Result<Author>> CreateAsync(AuthorForWriteDto authorForWriteDto);
+    Task<Result<Author>> CreateAsync(NewsAuthorForWriteDto authorForWriteDto);
 
-    Task<Result<IEnumerable<AuthorForReadDto>>> GetAllAsync();
+    Task<Result<IEnumerable<NewsAuthorForReadDto>>> GetAllAsync();
 
     Task<Result<Author>> GetByIdAsync(int id);
 
-    Task<Result> UpdateAsync(int id, AuthorForWriteDto authorForWriteDto);
+    Task<Result> UpdateAsync(int id, NewsAuthorForWriteDto authorForWriteDto);
 
     Task<Result> DeleteAsync(int id);
 }

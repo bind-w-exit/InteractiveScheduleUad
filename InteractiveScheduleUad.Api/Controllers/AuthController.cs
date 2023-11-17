@@ -50,6 +50,7 @@ public class AuthController : ControllerBase
         return HandleResult(result);
     }
 
+    // TODO: fix
     [HttpGet("RefreshToken")]
     [Authorize(Roles = "RefreshToken")]
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]

@@ -17,7 +17,7 @@ public class ArticleService : IArticleService
         _articleRepository = articleRepository;
     }
 
-    public async Task<Result<Article>> CreateAsync(ArticleForWriteDto articleForWriteDto)
+    public async Task<Result<Article>> CreateAsync(NewsArticleForWriteDto articleForWriteDto)
     {
         Article article = ArticleMapper.ArticleForWriteDtoToArticle(articleForWriteDto);
         article.Published = DateTime.UtcNow;
@@ -43,7 +43,7 @@ public class ArticleService : IArticleService
             return new NotFoundError(nameof(Article));
     }
 
-    public async Task<Result<IEnumerable<ArticleForReadDto>>> GetAllAsync()
+    public async Task<Result<IEnumerable<NewsArticleForReadDto>>> GetAllAsync()
     {
         var articles = await _articleRepository.GetAllAsync();
         var mappedArticles = articles.Select(ArticleMapper.ArticleToArticleForReadDto);
@@ -61,7 +61,7 @@ public class ArticleService : IArticleService
             return new NotFoundError(nameof(Article));
     }
 
-    public async Task<Result> UpdateAsync(int id, ArticleForWriteDto articleForWriteDto)
+    public async Task<Result> UpdateAsync(int id, NewsArticleForWriteDto articleForWriteDto)
     {
         var articles = await _articleRepository.GetByIdAsync(id);
 

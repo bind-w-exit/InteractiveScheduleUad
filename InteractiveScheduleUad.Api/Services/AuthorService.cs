@@ -17,7 +17,7 @@ public class AuthorService : IAuthorService
         _authorRepository = authorRepository;
     }
 
-    public async Task<Result<Author>> CreateAsync(AuthorForWriteDto authorForWriteDto)
+    public async Task<Result<Author>> CreateAsync(NewsAuthorForWriteDto authorForWriteDto)
     {
         Author author = AuthorMapper.AuthorForWriteDtoToAuthor(authorForWriteDto);
 
@@ -42,7 +42,7 @@ public class AuthorService : IAuthorService
             return new NotFoundError(nameof(Author));
     }
 
-    public async Task<Result<IEnumerable<AuthorForReadDto>>> GetAllAsync()
+    public async Task<Result<IEnumerable<NewsAuthorForReadDto>>> GetAllAsync()
     {
         var authors = await _authorRepository.GetAllAsync();
         var mappedAuthors = authors.Select(AuthorMapper.AuthorToAuthorForReadDto);
@@ -60,7 +60,7 @@ public class AuthorService : IAuthorService
             return new NotFoundError(nameof(Author));
     }
 
-    public async Task<Result> UpdateAsync(int id, AuthorForWriteDto authorForWriteDto)
+    public async Task<Result> UpdateAsync(int id, NewsAuthorForWriteDto authorForWriteDto)
     {
         var author = await _authorRepository.GetByIdAsync(id);
 

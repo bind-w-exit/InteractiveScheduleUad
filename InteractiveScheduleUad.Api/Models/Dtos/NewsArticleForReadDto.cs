@@ -1,7 +1,7 @@
 ﻿namespace InteractiveScheduleUad.Api.Models.Dtos;
 
 // TODO: Annotate
-public class ArticleForReadDto
+public class NewsArticleForReadDto
 {
     public int Id { get; set; }
 

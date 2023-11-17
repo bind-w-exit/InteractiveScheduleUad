@@ -17,7 +17,7 @@ public class DepartmentService : IDepartmentService
         _departmentRepository = departmentRepository;
     }
 
-    public async Task<Result<Department>> CreateAsync(DepartmentForWriteDto departmentCreateDto)
+    public async Task<Result<Department>> CreateAsync(TeacherDepartmentForWriteDto departmentCreateDto)
     {
         Department department = DepartmentMapper.DepartmentForWriteDtoToDepartment(departmentCreateDto);
 
@@ -59,7 +59,7 @@ public class DepartmentService : IDepartmentService
             return new NotFoundError(nameof(Department));
     }
 
-    public async Task<Result> UpdateAsync(int id, DepartmentForWriteDto departmentCreateDto)
+    public async Task<Result> UpdateAsync(int id, TeacherDepartmentForWriteDto departmentCreateDto)
     {
         var department = await _departmentRepository.GetByIdAsync(id);
 

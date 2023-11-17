@@ -1,6 +1,6 @@
 ﻿namespace InteractiveScheduleUad.Api.Models.Dtos;
 
-public class AuthorForReadDto
+public class NewsAuthorForReadDto
 {
     public int Id { get; set; }
 

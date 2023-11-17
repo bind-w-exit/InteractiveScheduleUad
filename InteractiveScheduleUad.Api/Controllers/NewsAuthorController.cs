@@ -26,8 +26,8 @@ public class NewsAuthorController : ControllerBase
     /// <response code="200">Success - Returns an array of authors</response>
     [HttpGet]
     [AllowAnonymous]
-    [ProducesResponseType(typeof(IEnumerable<AuthorForReadDto>), (int)HttpStatusCode.OK)]
-    public async Task<ActionResult<IEnumerable<AuthorForReadDto>>> Get()
+    [ProducesResponseType(typeof(IEnumerable<NewsAuthorForReadDto>), (int)HttpStatusCode.OK)]
+    public async Task<ActionResult<IEnumerable<NewsAuthorForReadDto>>> Get()
     {
         var result = await _authorService.GetAllAsync();
 
@@ -68,7 +68,7 @@ public class NewsAuthorController : ControllerBase
     [HttpPost]
     [Authorize(Roles = "Admin")]
     [ProducesResponseType(typeof(Author), (int)HttpStatusCode.Created)]
-    public async Task<ActionResult<Author>> Post(AuthorForWriteDto author)
+    public async Task<ActionResult<Author>> Post(NewsAuthorForWriteDto author)
     {
         var result = await _authorService.CreateAsync(author);
 
@@ -92,7 +92,7 @@ public class NewsAuthorController : ControllerBase
     [Authorize(Roles = "Admin")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-    public async Task<ActionResult> Put(int id, [FromBody] AuthorForWriteDto author)
+    public async Task<ActionResult> Put(int id, [FromBody] NewsAuthorForWriteDto author)
     {
         var result = await _authorService.UpdateAsync(id, author);
 

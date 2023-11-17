@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 namespace InteractiveScheduleUad.Api;
 
 // The database context is the main class that coordinates Entity Framework functionality for a data model.
+// note: does not contain schedule DbSet as it is saved under StudentsGroup
 public class InteractiveScheduleUadApiDbContext : DbContext
 {
     public InteractiveScheduleUadApiDbContext(DbContextOptions<InteractiveScheduleUadApiDbContext> options)

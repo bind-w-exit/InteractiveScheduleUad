@@ -153,6 +153,8 @@ builder.Services.AddSingleton<ITokenService, TokenService>();
 
 var app = builder.Build();
 
+app.UseMiddleware<ErrorLoggingMiddleware>();
+
 // enable cross-origin requests
 app.UseCors(builder => builder
            .AllowAnyOrigin()
@@ -253,5 +255,30 @@ static async Task CreateFirstUserIfEmpty(IAuthService authService, IUserReposito
         var adminUsername = configuration["ADMIN_USERNAME"];
         var adminPassword = configuration["ADMIN_PASSWORD"];
         await authService.Register(new() { Username = adminUsername, Password = adminPassword });
+    }
+}
+
+public class ErrorLoggingMiddleware
+{
+    private readonly RequestDelegate _next;
+
+    public ErrorLoggingMiddleware(RequestDelegate next)
+    {
+        _next = next;
+    }
+
+    public async Task Invoke(HttpContext context)
+    {
+        try
+        {
+            await _next(context);
+        }
+        catch (Exception e)
+        {
+            // Use your logging framework here to log the exception
+            Console.WriteLine(e);
+            Console.WriteLine(e.Message);
+            throw;
+        }
     }
 }

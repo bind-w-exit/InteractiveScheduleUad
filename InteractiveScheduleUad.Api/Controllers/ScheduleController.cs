@@ -20,7 +20,7 @@ public class ScheduleController : ControllerBase
 
     // GET api/<ScheduleController>/5
     /// <summary>
-    /// Retrieves a students group two weeks schedule by group ID
+    /// Retrieves a two weeks schedule by group ID
     /// </summary>
     /// <param name="studentsGroupId">Students group ID</param>
     /// <response code="200">Success - Returns the two weeks schedule with the specified students group ID</response>

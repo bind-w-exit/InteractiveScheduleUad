@@ -2,7 +2,7 @@
 
 namespace InteractiveScheduleUad.Api.Models.Dtos;
 
-public class ArticleForWriteDto
+public class NewsArticleForWriteDto
 {
     [Required]
     [StringLength(200)]

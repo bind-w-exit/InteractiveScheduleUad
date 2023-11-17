@@ -26,8 +26,8 @@ public class NewsArticleController : ControllerBase
     /// <response code="200">Success - Returns an array of articles</response>
     [HttpGet]
     [AllowAnonymous]
-    [ProducesResponseType(typeof(IEnumerable<ArticleForReadDto>), (int)HttpStatusCode.OK)]
-    public async Task<ActionResult<IEnumerable<ArticleForReadDto>>> Get()
+    [ProducesResponseType(typeof(IEnumerable<NewsArticleForReadDto>), (int)HttpStatusCode.OK)]
+    public async Task<ActionResult<IEnumerable<NewsArticleForReadDto>>> Get()
     {
         var result = await _articleService.GetAllAsync();
 
@@ -69,7 +69,7 @@ public class NewsArticleController : ControllerBase
     [HttpPost]
     [Authorize(Roles = "Admin")]
     [ProducesResponseType(typeof(Article), (int)HttpStatusCode.Created)]
-    public async Task<ActionResult<Article>> Post(ArticleForWriteDto article)
+    public async Task<ActionResult<Article>> Post(NewsArticleForWriteDto article)
     {
         var result = await _articleService.CreateAsync(article);
 
@@ -93,7 +93,7 @@ public class NewsArticleController : ControllerBase
     [Authorize(Roles = "Admin")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-    public async Task<ActionResult> Put(int id, [FromBody] ArticleForWriteDto article)
+    public async Task<ActionResult> Put(int id, [FromBody] NewsArticleForWriteDto article)
     {
         var result = await _articleService.UpdateAsync(id, article);
 

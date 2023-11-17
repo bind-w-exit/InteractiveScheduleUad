@@ -27,4 +27,10 @@
     <ProjectReference Include="..\InteractiveScheduleUad.Api\InteractiveScheduleUad.Api.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Data\ІСТ-5.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

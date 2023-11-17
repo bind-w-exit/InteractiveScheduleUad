@@ -106,6 +106,7 @@ public abstract class RepositoryBase<T> : IRepositoryBase<T>
     // TODO: Annotate
     public void Dispose()
     {
+        Console.WriteLine($"Disposing of Repository...");
         Dispose(true);
         GC.SuppressFinalize(this);
     }

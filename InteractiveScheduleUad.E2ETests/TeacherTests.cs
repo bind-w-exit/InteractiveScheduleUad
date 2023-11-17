@@ -14,7 +14,7 @@ public class TeacherTests : IAsyncLifetime
     {
     }
 
-    private static async Task<RestClient> GetTeacherClient()
+    private static async Task<RestClient> GetAuthenticatedClient()
     {
         var config = await ApiConfigRetriever.GetBasePathAndAccessToken();
 
@@ -23,15 +23,15 @@ public class TeacherTests : IAsyncLifetime
         {
             Authenticator = authenticator
         };
-        var teacherApiClient = new RestClient(options);
+        var authenticatedClient = new RestClient(options);
 
-        return teacherApiClient;
+        return authenticatedClient;
     }
 
     // runs before all tests
     public async Task InitializeAsync()
     {
-        var _client = await GetTeacherClient();
+        var _client = await GetAuthenticatedClient();
         client = _client;
     }
 
@@ -67,11 +67,8 @@ public class TeacherTests : IAsyncLifetime
     [Fact]
     public async Task GetAllTeachers_ReturnsArray()
     {
-        // Arrange
-        var request = new RestRequest("Teacher");
-
         // Act
-        var response = await client.GetAsync<List<Teacher>>(request);
+        var response = await client.GetJsonAsync<List<Teacher>>("Teacher");
 
         // Assert
         Assert.IsType<List<Teacher>>(response);

@@ -43,7 +43,7 @@ public class TokenService : ITokenService
     {
         // jti = json token id
         pairJti = Guid.NewGuid();
-        accessTokenExpires = DateTime.UtcNow.AddMinutes(5);
+        accessTokenExpires = DateTime.UtcNow.AddMinutes(30);
         refreshTokenExpires = DateTime.UtcNow.AddDays(14);
 
         var accessTokenClaims = GenerateAccessTokenClaims(user, pairJti);

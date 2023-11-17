@@ -21,4 +21,9 @@ public static partial class LessonMapper
             _ => classType.ToString(),
         };
     }
+
+    private static string RoomToString(Room room)
+    {
+        return room.Name;
+    }
 }
