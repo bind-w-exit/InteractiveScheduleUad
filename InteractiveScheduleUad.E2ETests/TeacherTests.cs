@@ -41,8 +41,9 @@ public class TeacherTests : IAsyncLifetime
         return Task.CompletedTask;
     }
 
+    // creates a teacher, then GETs it and checks whether it's the same as the one POSTed
     [Fact]
-    public async Task PostTeacher_ReturnsBackTeacherObject()
+    public void PostTeacher_CreatesTeacher()
     {
         // Arrange
         var lastName = "Test Teacher Last Name";
@@ -53,15 +54,16 @@ public class TeacherTests : IAsyncLifetime
             Email = "testTeacherEmail@gmail.com"
         };
 
-        var request = new RestRequest("Teacher").AddJsonBody(teacher);
-
         // Act
-
-        var response = await client.PostAsync<Teacher>(request);
+        var response = client.PostJson<TeacherForWriteDto, Teacher>("Teacher", teacher);
+        var getResponse = client.GetJson<Teacher>($"Teacher/{response.Id}");
 
         // Assert
         Assert.Equal(teacher.FirstName, response.FirstName);
         Assert.Equal(teacher.LastName, response.LastName);
+
+        Assert.NotNull(getResponse);
+        Assert.Equal(teacher.FirstName, getResponse.FirstName);
     }
 
     [Fact]

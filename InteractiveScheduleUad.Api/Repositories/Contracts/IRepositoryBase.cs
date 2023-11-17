@@ -2,7 +2,7 @@
 
 namespace InteractiveScheduleUad.Api.Repositories.Contracts;
 
-public interface IRepositoryBase<T> : IDisposable
+public interface IRepositoryBase<T>
     where T : class
 {
     void Delete(T entity);

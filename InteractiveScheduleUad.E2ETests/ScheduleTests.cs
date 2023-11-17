@@ -46,20 +46,25 @@ public class ScheduleTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task CreatingStudentGroup_CompletesAsExpected()
+    public void CreatingStudentGroup_CompletesAsExpected()
     {
         // Arrange
         // the payload has to be wrapped in quotes
         string groupName = "\"ІСТ-5\"";
-        string endpoint = "StudentsGroup";
+        string postEndpoint = "StudentsGroup";
 
         // Act
-        var response = await client.PostJsonAsync<string, StudentsGroupForReadDto>(endpoint, groupName);
+        var response = client.PostJson<string, StudentsGroupForReadDto>(postEndpoint, groupName);
+
+        string getEndpoint = $"StudentsGroup/{response.Id}";
+        var getResponse = client.GetJson<StudentsGroupForReadDto>(getEndpoint);
 
         // Assert
         Assert.Equal(groupName, $"\"{response.GroupName}\"");
+        Assert.Equal(groupName, $"\"{getResponse.GroupName}\"");
     }
 
+    // POSTs a group and schedule, then GETs the group and checks whether it contains the schedule POSTed
     [Fact]
     public async Task CreatingSchedule_CompletesAsExpected()
     {
@@ -72,43 +77,48 @@ public class ScheduleTests : IAsyncLifetime
 
         // arrange
 
+        // read "raw" schedule from file
         string pathToRawScheduleFile = @"Data\ІСТ-5.json";
         var rawScheduleText = await File.ReadAllTextAsync(pathToRawScheduleFile);
         var rawScheduleObj = JsonConvert.DeserializeObject<ScheduleFile>(rawScheduleText);
 
         Day rawScheduleMonday = rawScheduleObj.monday;
 
+        // POST new group
         var studentsGroup = await client.PostJsonAsync<string, StudentsGroupForReadDto>("StudentsGroup", "\"ІСТ-5\"");
         var studentsGroupId = studentsGroup.Id;
 
         // act
 
         // monday only
+        // create all subentities that are necessary for schedule
+        var rawDataMappedToEntityIds = rawScheduleMonday.classes.Select(RawClassToLessonForWriteDto);
         var scheduleForWriteDto = new WeekScheduleForWriteDto()
         {
-            Monday = rawScheduleObj.monday.classes.Select(RawClassToLessonForWriteDto),
+            Monday = rawDataMappedToEntityIds,
         };
 
         bool isSecondWeek = false;
-        string endpoint = $"Schedule?studentsGroupId={studentsGroupId}&isSecondWeek={isSecondWeek}";
+        string schedulePostEndpoint = $"Schedule?studentsGroupId={studentsGroupId}&isSecondWeek={isSecondWeek}";
 
-        var createScheduleResult = client.PostJson<WeekScheduleForWriteDto, WeekScheduleForReadDto>(endpoint, scheduleForWriteDto);
+        client.PostJson<WeekScheduleForWriteDto, WeekScheduleForReadDto>(schedulePostEndpoint, scheduleForWriteDto);
 
-        Console.WriteLine(createScheduleResult);
+        // GET the newly created schedule
+        var updatedStudentsGroup = client.GetJson<StudentsGroupForWriteDto>($"Schedule/{studentsGroupId}");
+        var firstWeekSchedule = updatedStudentsGroup.FirstWeekSchedule;
+
+        Assert.NotNull(firstWeekSchedule);
+        Console.WriteLine(firstWeekSchedule);
+
+        var firstLesson = firstWeekSchedule.Monday.First();
+        var firstLessonRaw = rawScheduleMonday.classes.First();
 
         // assert
 
-        var firstLesson = createScheduleResult.Monday.First();
-        var firstLessonRaw = rawScheduleMonday.classes.First();
-        Assert.Equal(createScheduleResult.Monday.Count(), rawScheduleMonday.classes.Count);
+        Assert.Equal(firstWeekSchedule.Monday.Count(), rawScheduleMonday.classes.Count);
         Assert.Equal(firstLesson.Sequence, firstLessonRaw.index);
         Assert.Equal(firstLesson.Room, firstLessonRaw.room);
         Assert.Equal(firstLesson.Subject, firstLessonRaw.name);
-
-        var retrievedScheduleObj = client.GetJson<StudentsGroupForWriteDto>($"Schedule/{studentsGroupId}");
-        var retrievedSchedule = retrievedScheduleObj.FirstWeekSchedule;
-
-        Assert.NotNull(retrievedSchedule);
     }
 
     private LessonForWriteDto RawClassToLessonForWriteDto(Class classObj)

@@ -36,7 +36,6 @@ public class StudentsGroupController : ControllerBase
             return Ok(result.Value);
     }
 
-    // TODO: implement retrieval by Id
     // GET api/<StudentsGroupController>/5
     /// <summary>
     /// Retrieves a students group by its ID
@@ -50,7 +49,7 @@ public class StudentsGroupController : ControllerBase
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult<StudentsGroupForReadDto>> Get(int id)
     {
-        var result = await _studentsGroupService.GetAllAsync();
+        var result = await _studentsGroupService.GetByIdAsync(id);
 
         if (result.IsFailed)
             return result.Errors.First().ToObjectResult();

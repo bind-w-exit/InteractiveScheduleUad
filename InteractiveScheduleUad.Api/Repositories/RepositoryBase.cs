@@ -87,27 +87,27 @@ public abstract class RepositoryBase<T> : IRepositoryBase<T>
     }
 
     // Implement IDisposable
-    private bool disposed = false;
+    //private bool disposed = false;
 
-    // TODO: Annotate
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!disposed)
-        {
-            if (disposing)
-            {
-                Context.Dispose();
-            }
+    //// TODO: Annotate
+    //protected virtual void Dispose(bool disposing)
+    //{
+    //    if (!disposed)
+    //    {
+    //        if (disposing)
+    //        {
+    //            Context.Dispose();
+    //        }
 
-            disposed = true;
-        }
-    }
+    //        disposed = true;
+    //    }
+    //}
 
-    // TODO: Annotate
-    public void Dispose()
-    {
-        Console.WriteLine($"Disposing of Repository...");
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
+    //// TODO: Annotate
+    //public void Dispose()
+    //{
+    //    Console.WriteLine($"Disposing of Repository...");
+    //    Dispose(true);
+    //    GC.SuppressFinalize(this);
+    //}
 }
