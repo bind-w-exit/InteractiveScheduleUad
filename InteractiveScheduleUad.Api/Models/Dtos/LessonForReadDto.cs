@@ -2,9 +2,7 @@
 
 public class LessonForReadDto
 {
-    public int Sequence { get; set; }
-
-    public required string Subject { get; set; }
+    public string? Subject { get; set; }
 
     public string? Teacher { get; set; }
 

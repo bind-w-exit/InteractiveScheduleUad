@@ -115,7 +115,6 @@ public class StudentsGroupController : ControllerBase
     public async Task<ActionResult> Delete(int id)
     {
         var result = await _studentsGroupService.DeleteAsync(id);
-
         if (result.IsFailed)
             return result.Errors.First().ToObjectResult();
         else

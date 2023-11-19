@@ -14,17 +14,23 @@ public class WeekScheduleService : IWeekScheduleService
     private readonly ITeacherRepository _teacherRepository;
     private readonly ISubjectRepository _subjectRepository;
     private readonly IRoomRepository _roomRepository;
+    private readonly IWeekScheduleRepository _weekScheduleRepository;
+    private readonly InteractiveScheduleUadApiDbContext _dbContext;
 
     public WeekScheduleService(
         IStudentsGroupRepository studentsGroupRepository,
         ITeacherRepository teacherRepository,
         ISubjectRepository subjectRepository,
-        IRoomRepository roomRepository)
+        IRoomRepository roomRepository,
+        IWeekScheduleRepository weekScheduleRepository,
+        InteractiveScheduleUadApiDbContext dbContext)
     {
         _studentsGroupRepository = studentsGroupRepository;
         _teacherRepository = teacherRepository;
         _subjectRepository = subjectRepository;
         _roomRepository = roomRepository;
+        _weekScheduleRepository = weekScheduleRepository;
+        _dbContext = dbContext;
     }
 
     public async Task<Result<WeekScheduleForReadDto>> CreateAsync(int studentsGroupId, WeekScheduleForWriteDto weekScheduleForWriteDto, bool isSecondWeek)
@@ -34,19 +40,25 @@ public class WeekScheduleService : IWeekScheduleService
         if (studentsGroup is null)
             return new NotFoundError(nameof(StudentsGroup));
 
-        WeekSchedule weekSchedule = await WeekScheduleForWriteDtoToWeekSchedule(weekScheduleForWriteDto);
+        return new NotFoundError(nameof(StudentsGroup));
 
-        if (isSecondWeek)
-            studentsGroup.SecondWeekSchedule = weekSchedule;
-        else
-            studentsGroup.FirstWeekSchedule = weekSchedule;
+        //WeekSchedule weekSchedule = await WeekScheduleForWriteDtoToWeekSchedule(weekScheduleForWriteDto);
 
-        _studentsGroupRepository.Update(studentsGroup);
-        await _studentsGroupRepository.SaveChangesAsync();
+        // add weekSchedule to schedule table
+        //await _weekScheduleRepository.InsertAsync(weekSchedule);
+        //await _weekScheduleRepository.SaveChangesAsync();
 
-        var weekScheduleForRead = WeekScheduleMapper.WeekScheduleToWeekScheduleForReadDto(weekSchedule);
+        //if (isSecondWeek)
+        //    studentsGroup.SecondWeekSchedule = weekSchedule;
+        //else
+        //    studentsGroup.FirstWeekSchedule = weekSchedule;
 
-        return weekScheduleForRead;
+        //_studentsGroupRepository.Update(studentsGroup);
+        //await _studentsGroupRepository.SaveChangesAsync();
+
+        //var weekScheduleForRead = WeekScheduleMapper.WeekScheduleToWeekScheduleForReadDto(weekSchedule);
+
+        //return weekScheduleForRead;
     }
 
     public async Task<Result> DeleteAsync(int studentsGroupId, bool isSecondWeek)
@@ -66,7 +78,7 @@ public class WeekScheduleService : IWeekScheduleService
         return Result.Ok();
     }
 
-    public async Task<Result<StudentsGroupForWriteDto>> GetByIdAsync(int studentsGroupId)
+    public async Task<Result<StudentsGroupWithSchedulesDto>> GetByIdAsync(int studentsGroupId)
     {
         var studentsGroup = await _studentsGroupRepository.GetByIdAsync(studentsGroupId);
 
@@ -78,7 +90,8 @@ public class WeekScheduleService : IWeekScheduleService
         return studentsGroupForWrite;
     }
 
-    private async Task<WeekSchedule> WeekScheduleForWriteDtoToWeekSchedule(WeekScheduleForWriteDto weekScheduleForWriteDto)
+    // converts representations of schedule: write --> model
+    private async Task WeekScheduleForWriteDtoToWeekSchedule(WeekScheduleForWriteDto weekScheduleForWriteDto)
     {
         var sundayTask = LessonsForWriteDtoToLessons(weekScheduleForWriteDto.Sunday);
         var mondayTask = LessonsForWriteDtoToLessons(weekScheduleForWriteDto.Monday);
@@ -90,16 +103,16 @@ public class WeekScheduleService : IWeekScheduleService
 
         await Task.WhenAll(sundayTask, mondayTask, tuesdayTask, wednesdayTask, thursdayTask, fridayTask, saturdayTask);
 
-        return new WeekSchedule()
-        {
-            Sunday = sundayTask.Result,
-            Monday = mondayTask.Result,
-            Tuesday = tuesdayTask.Result,
-            Wednesday = wednesdayTask.Result,
-            Thursday = thursdayTask.Result,
-            Friday = fridayTask.Result,
-            Saturday = saturdayTask.Result
-        };
+        //return new WeekSchedule()
+        //{
+        //    Sunday = sundayTask.Result,
+        //    Monday = mondayTask.Result,
+        //    Tuesday = tuesdayTask.Result,
+        //    Wednesday = wednesdayTask.Result,
+        //    Thursday = thursdayTask.Result,
+        //    Friday = fridayTask.Result,
+        //    Saturday = saturdayTask.Result
+        //};
     }
 
     private async Task<IEnumerable<Lesson>?> LessonsForWriteDtoToLessons(IEnumerable<LessonForWriteDto>? lessonsForWriteDto)
@@ -109,6 +122,10 @@ public class WeekScheduleService : IWeekScheduleService
 
         var tasks = lessonsForWriteDto.Select(LessonForWriteDtoToLesson);
         var lessons = await Task.WhenAll(tasks);
+
+        // persist lessons to DB
+        _dbContext.Lessons.AddRange(lessons);
+        await _dbContext.SaveChangesAsync();
 
         return lessons;
     }
@@ -127,7 +144,6 @@ public class WeekScheduleService : IWeekScheduleService
             Teacher = teacherTask.Result,
             Room = roomTask.Result,
             ClassType = lessonForWriteDto.ClassType,
-            Sequence = lessonForWriteDto.Sequence
         };
     }
 }

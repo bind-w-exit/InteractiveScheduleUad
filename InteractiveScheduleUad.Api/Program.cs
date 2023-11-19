@@ -1,5 +1,6 @@
 using FluentValidation;
 using InteractiveScheduleUad.Api;
+using InteractiveScheduleUad.Api.Middleware;
 using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Repositories;
 using InteractiveScheduleUad.Api.Repositories.Contracts;
@@ -135,8 +136,9 @@ builder.Services.AddTransient<IUserRepository, UserRepository>();
 builder.Services.AddTransient<IRevokedTokenRepository, RevokedTokenRepository>();
 builder.Services.AddTransient<IAuthorRepository, AuthorRepository>();
 builder.Services.AddTransient<IArticleRepository, ArticleRepository>();
+builder.Services.AddTransient<IWeekScheduleRepository, WeekScheduleRepository>();
 
-// add transient services for... services? Those build on top of repositories
+// add transient services. Those build on top of repositories
 builder.Services.AddTransient<IDepartmentService, DepartmentService>();
 builder.Services.AddTransient<IStudentsGroupService, StudentsGroupService>();
 builder.Services.AddTransient<IWeekScheduleService, WeekScheduleService>();
@@ -153,6 +155,7 @@ builder.Services.AddSingleton<ITokenService, TokenService>();
 
 var app = builder.Build();
 
+// not sure if it works
 app.UseMiddleware<ErrorLoggingMiddleware>();
 
 // enable cross-origin requests
@@ -195,7 +198,8 @@ static string GetDbConnectionString(IConfiguration configuration)
     var database = configuration["DATABASE_NAME"];
     var username = configuration["DATABASE_USER"];
     var password = configuration["DATABASE_PASSWORD"];
-    return $"Host={host};Database={database};Username={username};Password={password}";
+    //return $"Host={host};Database={database};Username={username};Password={password}";
+    return "Host=localhost;Database=realSCDB;Username=postgres;Password=1";
 }
 
 static bool CheckNpgsqlDbConnection(string connectionString)
@@ -255,30 +259,5 @@ static async Task CreateFirstUserIfEmpty(IAuthService authService, IUserReposito
         var adminUsername = configuration["ADMIN_USERNAME"];
         var adminPassword = configuration["ADMIN_PASSWORD"];
         await authService.Register(new() { Username = adminUsername, Password = adminPassword });
-    }
-}
-
-public class ErrorLoggingMiddleware
-{
-    private readonly RequestDelegate _next;
-
-    public ErrorLoggingMiddleware(RequestDelegate next)
-    {
-        _next = next;
-    }
-
-    public async Task Invoke(HttpContext context)
-    {
-        try
-        {
-            await _next(context);
-        }
-        catch (Exception e)
-        {
-            // Use your logging framework here to log the exception
-            Console.WriteLine(e);
-            Console.WriteLine(e.Message);
-            throw;
-        }
     }
 }

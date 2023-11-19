@@ -7,7 +7,7 @@ public interface IWeekScheduleService
 {
     Task<Result<WeekScheduleForReadDto>> CreateAsync(int studentsGroupId, WeekScheduleForWriteDto weekScheduleForWriteDto, bool IsSecondWeek);
 
-    Task<Result<StudentsGroupForWriteDto>> GetByIdAsync(int studentsGroupId);
+    Task<Result<StudentsGroupWithSchedulesDto>> GetByIdAsync(int studentsGroupId);
 
     Task<Result> DeleteAsync(int studentsGroupId, bool IsSecondWeek);
 }

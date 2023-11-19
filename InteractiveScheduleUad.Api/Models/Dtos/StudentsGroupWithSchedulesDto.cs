@@ -1,6 +1,6 @@
 ﻿namespace InteractiveScheduleUad.Api.Models.Dtos;
 
-public class StudentsGroupForWriteDto
+public class StudentsGroupWithSchedulesDto
 {
     public required string GroupName { get; set; }
 

@@ -104,7 +104,7 @@ public class ScheduleTests : IAsyncLifetime
         client.PostJson<WeekScheduleForWriteDto, WeekScheduleForReadDto>(schedulePostEndpoint, scheduleForWriteDto);
 
         // GET the newly created schedule
-        var updatedStudentsGroup = client.GetJson<StudentsGroupForWriteDto>($"Schedule/{studentsGroupId}");
+        var updatedStudentsGroup = client.GetJson<StudentsGroupWithSchedulesDto>($"Schedule/{studentsGroupId}");
         var firstWeekSchedule = updatedStudentsGroup.FirstWeekSchedule;
 
         Assert.NotNull(firstWeekSchedule);
@@ -116,7 +116,6 @@ public class ScheduleTests : IAsyncLifetime
         // assert
 
         Assert.Equal(firstWeekSchedule.Monday.Count(), rawScheduleMonday.classes.Count);
-        Assert.Equal(firstLesson.Sequence, firstLessonRaw.index);
         Assert.Equal(firstLesson.Room, firstLessonRaw.room);
         Assert.Equal(firstLesson.Subject, firstLessonRaw.name);
     }
@@ -145,8 +144,6 @@ public class ScheduleTests : IAsyncLifetime
 
         var lessonForWriteDto = new LessonForWriteDto()
         {
-            Sequence = classObj.index,
-
             RoomId = createdRoomId,
             SubjectId = createdSubjectId,
             TeacherId = createdTeacherId,

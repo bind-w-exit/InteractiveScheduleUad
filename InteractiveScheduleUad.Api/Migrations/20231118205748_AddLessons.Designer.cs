@@ -3,6 +3,7 @@ using System;
 using InteractiveScheduleUad.Api;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace InteractiveScheduleUad.Api.Migrations
 {
     [DbContext(typeof(InteractiveScheduleUadApiDbContext))]
-    partial class InteractiveScheduleUadApiDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231118205748_AddLessons")]
+    partial class AddLessons
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -123,10 +126,37 @@ namespace InteractiveScheduleUad.Api.Migrations
                     b.Property<int?>("RoomId")
                         .HasColumnType("integer");
 
+                    b.Property<int>("Sequence")
+                        .HasColumnType("integer");
+
                     b.Property<int?>("SubjectId")
                         .HasColumnType("integer");
 
                     b.Property<int?>("TeacherId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("WeekScheduleId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("WeekScheduleId1")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("WeekScheduleId2")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("WeekScheduleId3")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("WeekScheduleId4")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("WeekScheduleId5")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("WeekScheduleId6")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("WeekScheduleId7")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
@@ -136,6 +166,22 @@ namespace InteractiveScheduleUad.Api.Migrations
                     b.HasIndex("SubjectId");
 
                     b.HasIndex("TeacherId");
+
+                    b.HasIndex("WeekScheduleId");
+
+                    b.HasIndex("WeekScheduleId1");
+
+                    b.HasIndex("WeekScheduleId2");
+
+                    b.HasIndex("WeekScheduleId3");
+
+                    b.HasIndex("WeekScheduleId4");
+
+                    b.HasIndex("WeekScheduleId5");
+
+                    b.HasIndex("WeekScheduleId6");
+
+                    b.HasIndex("WeekScheduleId7");
 
                     b.ToTable("Lessons");
                 });
@@ -174,28 +220,6 @@ namespace InteractiveScheduleUad.Api.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Rooms");
-                });
-
-            modelBuilder.Entity("InteractiveScheduleUad.Api.Models.ScheduleLesson", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("LessonId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("StudentsGroupId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("TimeContextId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ScheduleLessons");
                 });
 
             modelBuilder.Entity("InteractiveScheduleUad.Api.Models.StudentsGroup", b =>
@@ -277,28 +301,6 @@ namespace InteractiveScheduleUad.Api.Migrations
                     b.ToTable("Teachers");
                 });
 
-            modelBuilder.Entity("InteractiveScheduleUad.Api.Models.TimeContext", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("LessonIndex")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("WeekDay")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("WeekIndex")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("TimeContexts");
-                });
-
             modelBuilder.Entity("InteractiveScheduleUad.Api.Models.User", b =>
                 {
                     b.Property<int>("Id")
@@ -337,52 +339,7 @@ namespace InteractiveScheduleUad.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("WeekSchedule");
-                });
-
-            modelBuilder.Entity("LessonScheduleLesson", b =>
-                {
-                    b.Property<int>("LessonsId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("ScheduleLessonsId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("LessonsId", "ScheduleLessonsId");
-
-                    b.HasIndex("ScheduleLessonsId");
-
-                    b.ToTable("LessonScheduleLesson");
-                });
-
-            modelBuilder.Entity("ScheduleLessonStudentsGroup", b =>
-                {
-                    b.Property<int>("ScheduleLessonsId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("StudentsGroupsId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("ScheduleLessonsId", "StudentsGroupsId");
-
-                    b.HasIndex("StudentsGroupsId");
-
-                    b.ToTable("ScheduleLessonStudentsGroup");
-                });
-
-            modelBuilder.Entity("ScheduleLessonTimeContext", b =>
-                {
-                    b.Property<int>("ScheduleLessonsId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("TimeContextsId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("ScheduleLessonsId", "TimeContextsId");
-
-                    b.HasIndex("TimeContextsId");
-
-                    b.ToTable("ScheduleLessonTimeContext");
+                    b.ToTable("Schedules");
                 });
 
             modelBuilder.Entity("InteractiveScheduleUad.Api.Models.Article", b =>
@@ -409,6 +366,38 @@ namespace InteractiveScheduleUad.Api.Migrations
                     b.HasOne("InteractiveScheduleUad.Api.Models.Teacher", "Teacher")
                         .WithMany()
                         .HasForeignKey("TeacherId");
+
+                    b.HasOne("InteractiveScheduleUad.Api.Models.WeekSchedule", null)
+                        .WithMany("Friday")
+                        .HasForeignKey("WeekScheduleId");
+
+                    b.HasOne("InteractiveScheduleUad.Api.Models.WeekSchedule", null)
+                        .WithMany("Lessons")
+                        .HasForeignKey("WeekScheduleId1");
+
+                    b.HasOne("InteractiveScheduleUad.Api.Models.WeekSchedule", null)
+                        .WithMany("Monday")
+                        .HasForeignKey("WeekScheduleId2");
+
+                    b.HasOne("InteractiveScheduleUad.Api.Models.WeekSchedule", null)
+                        .WithMany("Saturday")
+                        .HasForeignKey("WeekScheduleId3");
+
+                    b.HasOne("InteractiveScheduleUad.Api.Models.WeekSchedule", null)
+                        .WithMany("Sunday")
+                        .HasForeignKey("WeekScheduleId4");
+
+                    b.HasOne("InteractiveScheduleUad.Api.Models.WeekSchedule", null)
+                        .WithMany("Thursday")
+                        .HasForeignKey("WeekScheduleId5");
+
+                    b.HasOne("InteractiveScheduleUad.Api.Models.WeekSchedule", null)
+                        .WithMany("Tuesday")
+                        .HasForeignKey("WeekScheduleId6");
+
+                    b.HasOne("InteractiveScheduleUad.Api.Models.WeekSchedule", null)
+                        .WithMany("Wednesday")
+                        .HasForeignKey("WeekScheduleId7");
 
                     b.Navigation("Room");
 
@@ -441,49 +430,23 @@ namespace InteractiveScheduleUad.Api.Migrations
                     b.Navigation("Department");
                 });
 
-            modelBuilder.Entity("LessonScheduleLesson", b =>
+            modelBuilder.Entity("InteractiveScheduleUad.Api.Models.WeekSchedule", b =>
                 {
-                    b.HasOne("InteractiveScheduleUad.Api.Models.Lesson", null)
-                        .WithMany()
-                        .HasForeignKey("LessonsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("Friday");
 
-                    b.HasOne("InteractiveScheduleUad.Api.Models.ScheduleLesson", null)
-                        .WithMany()
-                        .HasForeignKey("ScheduleLessonsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
+                    b.Navigation("Lessons");
 
-            modelBuilder.Entity("ScheduleLessonStudentsGroup", b =>
-                {
-                    b.HasOne("InteractiveScheduleUad.Api.Models.ScheduleLesson", null)
-                        .WithMany()
-                        .HasForeignKey("ScheduleLessonsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("Monday");
 
-                    b.HasOne("InteractiveScheduleUad.Api.Models.StudentsGroup", null)
-                        .WithMany()
-                        .HasForeignKey("StudentsGroupsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
+                    b.Navigation("Saturday");
 
-            modelBuilder.Entity("ScheduleLessonTimeContext", b =>
-                {
-                    b.HasOne("InteractiveScheduleUad.Api.Models.ScheduleLesson", null)
-                        .WithMany()
-                        .HasForeignKey("ScheduleLessonsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("Sunday");
 
-                    b.HasOne("InteractiveScheduleUad.Api.Models.TimeContext", null)
-                        .WithMany()
-                        .HasForeignKey("TimeContextsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("Thursday");
+
+                    b.Navigation("Tuesday");
+
+                    b.Navigation("Wednesday");
                 });
 #pragma warning restore 612, 618
         }
