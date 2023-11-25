@@ -1,4 +1,7 @@
-﻿namespace InteractiveScheduleUad.Api.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
+
+namespace InteractiveScheduleUad.Api.Models;
 
 public class StudentsGroup
 {
@@ -6,9 +9,5 @@ public class StudentsGroup
 
     public string GroupName { get; set; }
 
-    public WeekSchedule? FirstWeekSchedule { get; set; }
-
-    public WeekSchedule? SecondWeekSchedule { get; set; }
-
-    public IEnumerable<ScheduleLesson>? ScheduleLessons { get; set; }
+    public virtual IEnumerable<FullContextJunction>? FullContexts { get; set; }
 }

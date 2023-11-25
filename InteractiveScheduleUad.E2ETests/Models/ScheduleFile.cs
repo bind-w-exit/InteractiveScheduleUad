@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace InteractiveScheduleUad.E2ETests.Models;
 
-internal class Class
+// classes for deserialization of schedule file
+
+internal class ScheduleClass
 {
     public int index { get; set; }
     public string name { get; set; }
@@ -20,7 +22,7 @@ internal class Class
 
 internal class Day
 {
-    public List<Class> classes { get; set; }
+    public List<ScheduleClass> classes { get; set; }
 }
 
 internal class ScheduleFile
@@ -30,4 +32,14 @@ internal class ScheduleFile
     public Day wednesday { get; set; }
     public Day thursday { get; set; }
     public Day friday { get; set; }
+
+    // note: copilot is cool
+    public int GetAllClassesCount()
+    {
+        return monday.classes.Count +
+               tuesday.classes.Count +
+               wednesday.classes.Count +
+               thursday.classes.Count +
+               friday.classes.Count;
+    }
 }

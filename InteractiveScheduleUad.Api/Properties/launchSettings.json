@@ -20,7 +20,7 @@
       "dotnetRunMessages": true,
       "applicationUrl": "https://localhost:7062;http://localhost:5058"
     },
-    "InMemoryDb": {
+    "Do_Not_Use_For_Tests_InMemoryDb": {
       "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "swagger",
@@ -29,7 +29,19 @@
         "SHOULD_USE_IN_MEMORY_DB": "true"
       },
       "dotnetRunMessages": true,
-      "applicationUrl": "https://localhost:7130;http://localhost:5265"
+      "applicationUrl": "https://localhost:7062;http://localhost:5058"
+    },
+    "NonContainerizedLocalDb": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "SHOULD_USE_NONCONTAINERIZED_LOCAL_DB": "true",
+        "NONCONTAINERIZED_LOCAL_DB_CONNECTION_STRING": "Host=localhost;Database=realSCDB;Username=postgres;Password=1;IncludeErrorDetail=true"
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "https://localhost:7062;http://localhost:5058"
     },
     "IIS Express": {
       "commandName": "IISExpress",

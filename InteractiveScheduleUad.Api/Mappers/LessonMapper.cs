@@ -7,8 +7,14 @@ namespace InteractiveScheduleUad.Api.Mappers;
 [Mapper]
 public static partial class LessonMapper
 {
-    [MapperIgnoreSource(nameof(Lesson.Id))]
+    //[MapperIgnoreSource(nameof(Lesson.Id))]
     public static partial LessonForReadDto LessonToLessonForReadDto(Lesson lesson);
+
+    [MapperIgnoreTarget(nameof(Lesson.Id))]
+    public static partial Lesson LessonForWriteDtoToLesson(LessonForWriteDto lesson);
+
+    //[MapperIgnoreTarget(nameof(Lesson.Id))]
+    //public static partial Lesson LessonWithRelatedEntitiesForWriteDtoToLesson(LessonWithRelatedEntitiesForWriteDto lesson);
 
     private static string ClassTypeToString(ClassType classType)
     {
@@ -25,5 +31,10 @@ public static partial class LessonMapper
     private static string RoomToString(Room room)
     {
         return room.Name;
+    }
+
+    private static Subject StringToSubject(string subject)
+    {
+        return new Subject { Name = subject };
     }
 }

@@ -1,9 +1,12 @@
 ﻿using InteractiveScheduleUad.Api.Extensions;
+using InteractiveScheduleUad.Api.Mappers;
 using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Models.Dtos;
 using InteractiveScheduleUad.Api.Services.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using SQLitePCL;
 using System.Net;
 
 namespace InteractiveScheduleUad.Api.Controllers;
@@ -13,10 +16,12 @@ namespace InteractiveScheduleUad.Api.Controllers;
 public class TeacherController : ControllerBase
 {
     private readonly ITeacherService _teacherService;
+    private InteractiveScheduleUadApiDbContext _context;
 
-    public TeacherController(ITeacherService teacherService)
+    public TeacherController(ITeacherService teacherService, InteractiveScheduleUadApiDbContext dbContext)
     {
         _teacherService = teacherService;
+        _context = dbContext;
     }
 
     // GET: api/<TeacherController>
@@ -26,15 +31,16 @@ public class TeacherController : ControllerBase
     /// <response code="200">Success - Returns an array of teachers</response>
     [HttpGet]
     [AllowAnonymous]
-    [ProducesResponseType(typeof(IEnumerable<Teacher>), (int)HttpStatusCode.OK)]
-    public async Task<ActionResult<IEnumerable<Teacher>>> Get()
+    [ProducesResponseType(typeof(IEnumerable<TeacherForReadDto>), (int)HttpStatusCode.OK)]
+    public async Task<ActionResult<IEnumerable<TeacherForReadDto>>> GetAll()
     {
         var result = await _teacherService.GetAllAsync();
+        var teachersForRead = result.Value.Select(TeacherMapper.TeacherToTeacherForReadDto);
 
         if (result.IsFailed)
             return result.Errors.First().ToObjectResult();
         else
-            return Ok(result.Value);
+            return Ok(teachersForRead);
     }
 
     // GET api/<TeacherController>/5
@@ -64,19 +70,28 @@ public class TeacherController : ControllerBase
     /// </summary>
     /// <param name="teacher">The teacher data</param>
     /// <response code="201">Created - Returns the created teacher</response>
-    /// <response code="400">BadRequest - One or more validation errors occurred</response>
     [HttpPost]
-    [Authorize(Roles = "Admin")]
+    //[Authorize(Roles = "Admin")]
     [ProducesResponseType(typeof(Teacher), (int)HttpStatusCode.Created)]
     public async Task<ActionResult<Teacher>> Post([FromBody] TeacherForWriteDto teacher)
     {
-        var result = await _teacherService.CreateAsync(teacher);
+        //var result = await _teacherService.CreateAsync(teacher);
 
-        if (result.IsFailed)
-            return result.Errors.First().ToObjectResult();
+        var newTeacherProxy = _context.Teachers.CreateProxy();
+        TeacherMapper.TeacherForWriteDtoToTeacher(teacher, newTeacherProxy);
 
-        var createdTeacher = result.Value;
-        return CreatedAtAction(nameof(Get), new { id = createdTeacher.Id }, createdTeacher);
+        _context.Add(newTeacherProxy);
+        _context.SaveChanges();
+
+        return Ok(newTeacherProxy);
+
+        //var teacherForRead = await _context.Teachers.AddAsync(newTeacherProxy);
+
+        //if (result.IsFailed)
+        //    return result.Errors.First().ToObjectResult();
+
+        //var createdTeacher = await _teacherService.GetByIdAsync(result.Value.Id);
+        //return CreatedAtAction(nameof(Get), new { id = createdTeacher.Id }, createdTeacher);
     }
 
     // PUT api/<TeacherController>/5
@@ -89,7 +104,7 @@ public class TeacherController : ControllerBase
     /// <response code="400">BadRequest - One or more validation errors occurred</response>
     /// <response code="404">NotFound - Teacher with the specified ID was not found</response>
     [HttpPut("{id}")]
-    [Authorize(Roles = "Admin")]
+    //[Authorize(Roles = "Admin")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult> Put(int id, [FromBody] TeacherForWriteDto newTeacher)
@@ -121,5 +136,28 @@ public class TeacherController : ControllerBase
             return result.Errors.First().ToObjectResult();
         else
             return Ok();
+    }
+
+    // DELETE api/<TeacherController>/5
+    /// <summary>
+    /// Deletes all teachers
+    /// </summary>
+    /// <response code="200">Success - Successfully deleted</response>
+    [HttpDelete]
+    [Authorize(Roles = "Admin")]
+    [ProducesResponseType((int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
+    public async Task<ActionResult> DeleteAll()
+    {
+        //await _context.Teachers.ExecuteDeleteAsync();
+        _context.Teachers.RemoveRange(_context.Teachers);
+        await _context.SaveChangesAsync();
+
+        return Ok();
+
+        //if (result.IsFailed)
+        //    return result.Errors.First().ToObjectResult();
+        //else
+        //    return Ok();
     }
 }

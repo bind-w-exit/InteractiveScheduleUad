@@ -1,12 +1,17 @@
-﻿namespace InteractiveScheduleUad.Api.Models;
+﻿using Microsoft.EntityFrameworkCore;
 
+namespace InteractiveScheduleUad.Api.Models;
+
+[Index(nameof(FirstName), nameof(LastName), IsUnique = true)]
 public class Teacher
 {
     public int Id { get; set; }
 
-    public required string FirstName { get; set; }
+    // primitives
 
-    public required string LastName { get; set; }
+    public string FirstName { get; set; }
+
+    public string LastName { get; set; }
 
     public string? MiddleName { get; set; }
 
@@ -14,7 +19,15 @@ public class Teacher
 
     public string? Qualifications { get; set; }
 
-    public Department? Department { get; set; }
+    // foreign keys
+
+    public int? DepartmentId { get; set; }
+    public int? LessonId { get; set; }
+
+    // navigations
+
+    public virtual Department? Department { get; set; }
+    public virtual IEnumerable<Lesson>? Lesson { get; set; }
 
     public override string ToString()
     {

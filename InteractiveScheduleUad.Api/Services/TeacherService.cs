@@ -5,6 +5,8 @@ using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Models.Dtos;
 using InteractiveScheduleUad.Api.Repositories.Contracts;
 using InteractiveScheduleUad.Api.Services.Contracts;
+using System.Security.Cryptography;
+using static InteractiveScheduleUad.Api.Utilities.Utls;
 
 namespace InteractiveScheduleUad.Api.Services;
 
@@ -22,7 +24,6 @@ public class TeacherService : ITeacherService
     public async Task<Result<Teacher>> CreateAsync(TeacherForWriteDto teacherForWriteDto)
     {
         Teacher teacher = TeacherMapper.TeacherForWriteDtoToTeacher(teacherForWriteDto);
-        teacher.Department = await _departmentRepository.GetByIdAsync(teacherForWriteDto.DepartmentId);
 
         await _teacherRepository.InsertAsync(teacher);
         await _teacherRepository.SaveChangesAsync();

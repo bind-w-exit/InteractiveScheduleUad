@@ -15,4 +15,6 @@ public interface IDepartmentService
     Task<Result> UpdateAsync(int id, TeacherDepartmentForWriteDto departmentCreateDto);
 
     Task<Result> DeleteAsync(int id);
+
+    Task DeleteAll();
 }

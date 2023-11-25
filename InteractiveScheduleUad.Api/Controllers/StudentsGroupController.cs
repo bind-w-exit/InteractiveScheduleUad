@@ -1,8 +1,11 @@
 ﻿using InteractiveScheduleUad.Api.Extensions;
+using InteractiveScheduleUad.Api.Mappers;
+using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Models.Dtos;
 using InteractiveScheduleUad.Api.Services.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Net;
 
 namespace InteractiveScheduleUad.Api.Controllers;
@@ -12,13 +15,14 @@ namespace InteractiveScheduleUad.Api.Controllers;
 public class StudentsGroupController : ControllerBase
 {
     private readonly IStudentsGroupService _studentsGroupService;
+    private readonly InteractiveScheduleUadApiDbContext _context;
 
-    public StudentsGroupController(IStudentsGroupService studentsGroupService)
+    public StudentsGroupController(IStudentsGroupService studentsGroupService, InteractiveScheduleUadApiDbContext context)
     {
         _studentsGroupService = studentsGroupService;
+        _context = context;
     }
 
-    // GET: api/<StudentsGroupController>
     /// <summary>
     /// Retrieves all students groups
     /// </summary>
@@ -36,7 +40,6 @@ public class StudentsGroupController : ControllerBase
             return Ok(result.Value);
     }
 
-    // GET api/<StudentsGroupController>/5
     /// <summary>
     /// Retrieves a students group by its ID
     /// </summary>
@@ -57,7 +60,6 @@ public class StudentsGroupController : ControllerBase
             return Ok(result.Value);
     }
 
-    // POST api/<StudentsGroupController>
     /// <summary>
     /// Creates a new students group
     /// </summary>
@@ -65,17 +67,19 @@ public class StudentsGroupController : ControllerBase
     /// <response code="201">Created - Returns the created students group</response>
     /// <response code="400">BadRequest - One or more validation errors occurred</response>
     [HttpPost]
-    [Authorize(Roles = "Admin")]
+    //[Authorize(Roles = "Admin")]
     [ProducesResponseType(typeof(StudentsGroupForReadDto), (int)HttpStatusCode.Created)]
     public async Task<ActionResult<StudentsGroupForReadDto>> Post([FromBody] string groupName)
     {
-        var result = await _studentsGroupService.CreateAsync(groupName);
+        // creates a new group. May throw due to unique index constraint
 
-        if (result.IsFailed)
-            return result.Errors.First().ToObjectResult();
+        var newGroup = new StudentsGroup { GroupName = groupName };
+        _context.StudentsGroups.Add(newGroup);
 
-        var createdStudentsGroup = result.Value;
-        return CreatedAtAction(nameof(Get), new { id = createdStudentsGroup.Id }, createdStudentsGroup);
+        await _context.SaveChangesAsync();
+
+        var newGroupForRead = StudentsGroupMapper.StudentsGroupToStudentsGroupForReadDto(newGroup);
+        return Ok(newGroupForRead);
     }
 
     // PUT api/<StudentsGroupController>/5
@@ -119,5 +123,19 @@ public class StudentsGroupController : ControllerBase
             return result.Errors.First().ToObjectResult();
         else
             return Ok();
+    }
+
+    /// <summary>
+    /// Deletes all groups
+    /// </summary>
+    /// <response code="200">Success - Successfully deleted</response>
+    [HttpDelete()]
+    [Authorize(Roles = "Admin")]
+    [ProducesResponseType((int)HttpStatusCode.OK)]
+    public async Task<ActionResult> DeleteAll()
+    {
+        await _context.StudentsGroups.ExecuteDeleteAsync();
+
+        return Ok();
     }
 }

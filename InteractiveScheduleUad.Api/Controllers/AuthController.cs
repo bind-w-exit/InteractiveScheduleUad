@@ -20,6 +20,7 @@ public class AuthController : ControllerBase
         _authService = authService;
     }
 
+    // only admin can create new users
     [HttpPost("Register")]
     [Authorize(Roles = "Admin")]
     [ProducesResponseType(typeof(UserForReadDto), (int)HttpStatusCode.OK)]
@@ -41,7 +42,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpDelete("Logout")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = nameof(UserRole.Admin))]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.BadRequest)]
     public async Task<ActionResult> Logout()
@@ -50,16 +51,18 @@ public class AuthController : ControllerBase
         return HandleResult(result);
     }
 
-    // TODO: fix
-    [HttpGet("RefreshToken")]
-    [Authorize(Roles = "RefreshToken")]
+    [HttpPost("RefreshToken")]
+    //[Authorize(Roles = "RefreshToken")]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.BadRequest)]
-    public async Task<ActionResult<string>> RefreshToken()
+    public async Task<ActionResult<string>> RefreshToken([FromBody] string refreshToken)
     {
-        var result = await _authService.RefreshToken(User);
+        var result = await _authService.RefreshToken(refreshToken);
         return HandleResult(result);
     }
+
+    // utils
 
     private ActionResult HandleResult<T>(Result<T> result)
     {

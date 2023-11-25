@@ -1,4 +1,5 @@
 ﻿using InteractiveScheduleUad.Api.Extensions;
+using InteractiveScheduleUad.Api.Mappers;
 using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Models.Dtos;
 using InteractiveScheduleUad.Api.Services.Contracts;
@@ -13,10 +14,12 @@ namespace InteractiveScheduleUad.Api.Controllers;
 public class RoomController : ControllerBase
 {
     private readonly IRoomService _roomService;
+    private InteractiveScheduleUadApiDbContext _context;
 
-    public RoomController(IRoomService roomService)
+    public RoomController(IRoomService roomService, InteractiveScheduleUadApiDbContext context)
     {
         _roomService = roomService;
+        _context = context;
     }
 
     // GET: api/<RoomController>
@@ -27,14 +30,19 @@ public class RoomController : ControllerBase
     [HttpGet]
     [AllowAnonymous]
     [ProducesResponseType(typeof(IEnumerable<Room>), (int)HttpStatusCode.OK)]
-    public async Task<ActionResult<IEnumerable<Room>>> Get()
+    public async Task<ActionResult<IEnumerable<RoomForReadDto>>> GetAll()
     {
-        var result = await _roomService.GetAllAsync();
+        var allRooms = _context.Rooms;
+        var allRoomsForRead = allRooms.Select(RoomMapper.RoomToRoomForReadDto);
 
-        if (result.IsFailed)
-            return result.Errors.First().ToObjectResult();
-        else
-            return Ok(result.Value);
+        return Ok(allRoomsForRead);
+
+        //var result = await _roomService.GetAllAsync();
+
+        //if (result.IsFailed)
+        //    return result.Errors.First().ToObjectResult();
+        //else
+        //    return Ok(result.Value);
     }
 
     // GET api/<RoomController>/5

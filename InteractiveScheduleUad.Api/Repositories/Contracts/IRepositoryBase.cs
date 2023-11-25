@@ -7,6 +7,8 @@ public interface IRepositoryBase<T>
 {
     void Delete(T entity);
 
+    Task DeleteAll();
+
     Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate);
 
     Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate);

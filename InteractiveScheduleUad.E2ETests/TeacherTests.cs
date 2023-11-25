@@ -1,6 +1,9 @@
-using InteractiveScheduleUad.Api.Models;
+﻿using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Models.Dtos;
+using InteractiveScheduleUad.E2ETests.Extensions;
+using InteractiveScheduleUad.E2ETests.Models;
 using InteractiveScheduleUad.E2ETests.Utils;
+using Newtonsoft.Json;
 using RestSharp;
 using RestSharp.Authenticators;
 
@@ -9,6 +12,9 @@ namespace InteractiveScheduleUad.E2ETests;
 public class TeacherTests : IAsyncLifetime
 {
     private RestClient client = null;
+
+    private string teacherEndpoint = "Teacher";
+    private string teacherDepartmentEndpoint = "TeacherDepartment";
 
     public TeacherTests()
     {
@@ -33,6 +39,18 @@ public class TeacherTests : IAsyncLifetime
     {
         var _client = await GetAuthenticatedClient();
         client = _client;
+
+        // delete entities. Start with the topmost ones in the hierarchy
+
+        // delete all teachers
+
+        var request = new RestRequest(teacherEndpoint);
+        var response = await client.DeleteAsync(request);
+
+        // delete all teacher departments
+
+        request = new RestRequest(teacherDepartmentEndpoint);
+        response = await client.DeleteAsync(request);
     }
 
     // runs after all tests
@@ -46,24 +64,36 @@ public class TeacherTests : IAsyncLifetime
     public void PostTeacher_CreatesTeacher()
     {
         // Arrange
-        var lastName = "Test Teacher Last Name";
-        var teacher = new TeacherForWriteDto()
-        {
-            FirstName = "Test Teacher Name",
-            LastName = lastName,
-            Email = "testTeacherEmail@gmail.com"
-        };
+
+        var rawTeachersObj = ReadRawTeachersFromFile();
+        var rawTeacher = rawTeachersObj.First();
 
         // Act
-        var response = client.PostJson<TeacherForWriteDto, Teacher>("Teacher", teacher);
-        var getResponse = client.GetJson<Teacher>($"Teacher/{response.Id}");
+        var response = CreateTeacher(rawTeacher);
+        var getResponse = client.GetJson<TeacherForReadDto>($"{teacherEndpoint}/{response.Id}");
 
         // Assert
-        Assert.Equal(teacher.FirstName, response.FirstName);
-        Assert.Equal(teacher.LastName, response.LastName);
+        Assert.Equivalent(getResponse, response);
+        Assert.Equal(getResponse.Department.Name, rawTeacher.DepartmentFullName);
+        Assert.Equal(getResponse.Department.Abbreviation, rawTeacher.DepartmentAbbreviation);
+    }
 
-        Assert.NotNull(getResponse);
-        Assert.Equal(teacher.FirstName, getResponse.FirstName);
+    [Fact]
+    public void CreatingAllTeachers_CompletesAsExpected()
+    {
+        // Arrange
+
+        var rawTeachersObj = ReadRawTeachersFromFile();
+
+        // Act
+        foreach (var rawTeacher in rawTeachersObj)
+        {
+            CreateTeacher(rawTeacher);
+        }
+
+        // Assert
+        var response = client.GetJson<List<TeacherForReadDto>>(teacherEndpoint);
+        Assert.Equal(rawTeachersObj.Count, response.Count);
     }
 
     [Fact]
@@ -74,5 +104,53 @@ public class TeacherTests : IAsyncLifetime
 
         // Assert
         Assert.IsType<List<Teacher>>(response);
+    }
+
+    private Teacher CreateTeacher(RawTeacher rawTeacher)
+    {
+        // Full name = Прізвище Ім'я По батькові
+        var nameBits = rawTeacher.FullName.Split(' ');
+        var lastName = nameBits.First();
+        var firstName = nameBits[1];
+        var middleName = nameBits.Length == 3 ? nameBits[2] : null; // aka patronymic
+
+        var email = rawTeacher.Email;
+
+        // ensure that department exists
+
+        TeacherDepartmentForWriteDto newDepartment = new()
+        {
+            Name = rawTeacher.DepartmentFullName,
+            Abbreviation = rawTeacher.DepartmentAbbreviation,
+            Link = rawTeacher.DepartmentLink
+        };
+        var department = client.EnsureExists<Department, TeacherDepartmentForWriteDto>
+            (teacherDepartmentEndpoint, null, newDepartment, (d) => d.Name == newDepartment.Name);
+        var departmentId = department.Id;
+
+        // construct teacher object
+
+        var teacher = new TeacherForWriteDto()
+        {
+            FirstName = firstName,
+            LastName = lastName,
+            MiddleName = middleName,
+            Email = email,
+            Qualifications = rawTeacher.Qualification,
+            DepartmentId = departmentId
+        };
+
+        return client.PostJson<TeacherForWriteDto, Teacher>(teacherEndpoint, teacher);
+    }
+
+    private static TeachersFile ReadRawTeachersFromFile()
+    {
+        string pathToRawTeachersFile = @"Data\teachers.json";
+        var rawTeachersText = File.ReadAllText(
+            path: pathToRawTeachersFile,
+            encoding: System.Text.Encoding.UTF8);
+        var rawTeachesObj = JsonConvert.DeserializeObject<TeachersFile>(rawTeachersText);
+
+        return rawTeachesObj;
     }
 }

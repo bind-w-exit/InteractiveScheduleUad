@@ -11,5 +11,8 @@ public interface ITokenService
         out DateTime accessTokenExpires,
         out DateTime refreshTokenExpires);
 
-    string GenerateRefreshToken(User user, Guid pairJti);
+    //string GenerateRefreshToken(User user, Guid pairJti);
+    //string GenerateRefreshToken(string refreshToken);
+
+    string GenerateAccessTokenInExchangeForRefreshToken(string refreshToken);
 }

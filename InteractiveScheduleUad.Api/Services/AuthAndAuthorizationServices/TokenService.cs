@@ -1,6 +1,7 @@
 ﻿using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Services.AuthAndAuthorizationServices.Contracts;
 using Microsoft.IdentityModel.Tokens;
+using Npgsql.Internal.TypeHandlers;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -13,11 +14,17 @@ public class TokenService : ITokenService
     private readonly string _issuer;
     private readonly string _key;
 
-    public TokenService(IConfiguration configuration)
+    private readonly int _accessTokenLifetimeMins = 30;
+    private readonly int _refreshTokenLifetimeDays = 14;
+
+    private InteractiveScheduleUadApiDbContext _dbContext;
+
+    public TokenService(IConfiguration configuration, InteractiveScheduleUadApiDbContext dbContext)
     {
         _issuer = ValidateConfigurationProp(configuration["JWT_ISSUER"], "JWT_ISSUER");
         _audience = ValidateConfigurationProp(configuration["JWT_AUDIENCE"], "JWT_AUDIENCE");
         _key = ValidateConfigurationProp(configuration["JWT_ACCESS_TOKEN_SECRET"], "JWT_ACCESS_TOKEN_SECRET");
+        _dbContext = dbContext;
     }
 
     private static string ValidateConfigurationProp(string? value, string parameterName)
@@ -30,6 +37,8 @@ public class TokenService : ITokenService
         return value;
     }
 
+    // TODO: Annotate
+    // overload
     public AuthenticatedResponse GenerateAuthenticatedResponse(User user)
     {
         return GenerateAuthenticatedResponse(user, out _, out _, out _);
@@ -43,15 +52,14 @@ public class TokenService : ITokenService
     {
         // jti = json token id
         pairJti = Guid.NewGuid();
-        accessTokenExpires = DateTime.UtcNow.AddMinutes(30);
-        refreshTokenExpires = DateTime.UtcNow.AddDays(14);
+        accessTokenExpires = DateTime.UtcNow.AddMinutes(_accessTokenLifetimeMins);
+        refreshTokenExpires = DateTime.UtcNow.AddDays(_refreshTokenLifetimeDays);
 
-        var accessTokenClaims = GenerateAccessTokenClaims(user, pairJti);
         var refreshTokenClaims = GenerateRefreshTokenClaims(user, pairJti);
 
         return new AuthenticatedResponse
         {
-            AccessToken = GenerateToken(accessTokenClaims, accessTokenExpires),
+            AccessToken = GenerateAccessToken(user, pairJti),
             RefreshToken = GenerateToken(refreshTokenClaims, refreshTokenExpires)
         };
     }
@@ -95,11 +103,58 @@ public class TokenService : ITokenService
         return tokenString;
     }
 
-    public string GenerateRefreshToken(User user, Guid pairJti)
+    public string GenerateAccessToken(User user, Guid pairJti)
     {
-        var accessTokenExpires = DateTime.UtcNow.AddMinutes(5);
-        var accessTokenClaims = GenerateAccessTokenClaims(user, pairJti);
+        var tokenExpires = DateTime.UtcNow.AddMinutes(_accessTokenLifetimeMins);
+        var tokenClaims = GenerateAccessTokenClaims(user, pairJti);
 
-        return GenerateToken(accessTokenClaims, accessTokenExpires);
+        return GenerateToken(tokenClaims, tokenExpires);
+    }
+
+    public string GenerateAccessTokenInExchangeForRefreshToken(string refreshToken)
+    {
+        var principal = GetPrincipalFromRefreshToken(refreshToken);
+
+        // extract user name from principal claims
+        var username = principal.Identity?.Name;
+
+        // get user from db
+        var user = _dbContext.Users.SingleOrDefault(u => u.Username == username);
+
+        if (user is null)
+            throw new SecurityTokenException("Invalid token");
+
+        var accessTokenExpirationDate = DateTime.UtcNow.AddMinutes(_accessTokenLifetimeMins);
+        var newJwtToken = GenerateAccessToken(user, Guid.NewGuid());
+
+        return newJwtToken;
+    }
+
+    // TODO: Add more checks
+    private ClaimsPrincipal GetPrincipalFromRefreshToken(string token)
+    {
+        var tokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_key)),
+            
+            ValidateIssuer = true,
+            ValidIssuer = _issuer,
+            
+            ValidateAudience = true,
+            ValidAudience = _audience,
+
+            ValidateLifetime = true, // Here we are (not) saying that we don't care about the token's expiration 
+        };
+
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var principal = tokenHandler
+            .ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
+        var jwtSecurityToken = securityToken as JwtSecurityToken;
+
+        if (jwtSecurityToken == null || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+            throw new SecurityTokenException("Invalid token");
+
+        return principal;
     }
 }

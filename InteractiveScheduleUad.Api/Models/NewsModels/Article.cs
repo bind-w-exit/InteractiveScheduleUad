@@ -19,5 +19,5 @@ public class Article
     // TODO: Annotate
     public int AuthorId { get; set; }
 
-    public Author Author { get; set; }
+    public virtual Author Author { get; set; }
 }

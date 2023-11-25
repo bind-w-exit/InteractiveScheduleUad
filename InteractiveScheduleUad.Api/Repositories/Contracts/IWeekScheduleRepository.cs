@@ -2,6 +2,6 @@
 
 namespace InteractiveScheduleUad.Api.Repositories.Contracts;
 
-public interface IWeekScheduleRepository : IRepositoryBase<WeekSchedule>
+public interface IWeekScheduleRepository : IRepositoryBase<WeekSchedule_DoNotUse>
 {
 }

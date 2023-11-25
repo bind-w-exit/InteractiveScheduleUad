@@ -19,5 +19,7 @@ public interface IAuthService
 
     Task<Result> Logout(ClaimsPrincipal claims);
 
-    Task<Result<string>> RefreshToken(ClaimsPrincipal claims);
+    //Task<Result<string>> RefreshToken(ClaimsPrincipal claims);
+    Task<Result<string>> RefreshToken(string  refreshToken);
+
 }

@@ -42,6 +42,11 @@ public class DepartmentService : IDepartmentService
             return new NotFoundError(nameof(Department));
     }
 
+    public async Task DeleteAll()
+    {
+        await _departmentRepository.DeleteAll();
+    }
+
     public async Task<Result<IEnumerable<Department>>> GetAllAsync()
     {
         var departments = await _departmentRepository.GetAllAsync();

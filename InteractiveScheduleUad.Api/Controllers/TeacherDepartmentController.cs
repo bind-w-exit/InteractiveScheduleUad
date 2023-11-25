@@ -124,4 +124,22 @@ public class TeacherDepartmentController : ControllerBase
         else
             return Ok();
     }
+
+    /// <summary>
+    /// Deletes all department
+    /// </summary>
+    /// <response code="200">Success - Successfully deleted</response>
+    [HttpDelete]
+    [Authorize(Roles = "Admin")]
+    [ProducesResponseType((int)HttpStatusCode.OK)]
+    public async Task<ActionResult> DeleteAll()
+    {
+        await _departmentService.DeleteAll();
+
+        return Ok();
+        //if (result.IsFailed)
+        //    return result.Errors.First().ToObjectResult();
+        //else
+        //    return Ok();
+    }
 }

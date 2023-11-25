@@ -49,7 +49,7 @@ public class SubjectController : ControllerBase
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult<Subject>> Get(int id)
     {
-        var result = await _subjectService.GetAllAsync();
+        var result = await _subjectService.GetByIdAsync(id);
 
         if (result.IsFailed)
             return result.Errors.First().ToObjectResult();

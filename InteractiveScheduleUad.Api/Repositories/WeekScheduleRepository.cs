@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace InteractiveScheduleUad.Api.Repositories;
 
-public class WeekScheduleRepository : RepositoryBase<WeekSchedule>, IWeekScheduleRepository
+public class WeekScheduleRepository : RepositoryBase<WeekSchedule_DoNotUse>, IWeekScheduleRepository
 {
     public WeekScheduleRepository(DbContext context) : base(context)
     {

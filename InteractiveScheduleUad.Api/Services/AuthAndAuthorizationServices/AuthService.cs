@@ -99,11 +99,15 @@ public class AuthService : IAuthService
     {
         var user = await _userRepository.SingleOrDefaultAsync(u => u.Username == userForLoginDto.UserName);
 
+        // validate username and password
+
         if (user is null)
             return new NotFoundError(nameof(User));
 
         if (!_hashService.VerifyPasswordHash(userForLoginDto.Password, user.PasswordHash, user.PasswordSalt))
             return new UnauthorizedError("Wrong password");
+
+        // generate JWT
 
         AuthenticatedResponse response = _tokenService.GenerateAuthenticatedResponse(user);
 
@@ -127,6 +131,7 @@ public class AuthService : IAuthService
         var tokenExpires = DateTimeOffset.FromUnixTimeSeconds(tokenExpiresSeconds);
 
         var revokedToken = await _revokedTokenRepository.SingleOrDefaultAsync(t => t.Jti == jti);
+        // TODO: Annotate
         if (revokedToken is not null)
         {
             return Result.Ok();
@@ -145,32 +150,32 @@ public class AuthService : IAuthService
     }
 
     // TODO: Annotate
-    public async Task<Result<string>> RefreshToken(ClaimsPrincipal claims)
+    public async Task<Result<string>> RefreshToken(string refrehsToken)
     {
-        var jtiString = claims.FindFirstValue(JwtRegisteredClaimNames.Jti);
-        if (string.IsNullOrEmpty(jtiString) || !Guid.TryParse(jtiString, out Guid jti))
-        {
-            return new UnauthorizedError("The JTI is not a valid GUID.");
-        }
+        //var jtiString = claims.FindFirstValue(JwtRegisteredClaimNames.Jti);
+        //if (string.IsNullOrEmpty(jtiString) || !Guid.TryParse(jtiString, out Guid jti))
+        //{
+        //    return new UnauthorizedError("The JTI is not a valid GUID.");
+        //}
 
-        var userId = claims.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userId) || !int.TryParse(userId, out int userIdValue))
-        {
-            return new UnauthorizedError("The user ID is not a valid integer.");
-        }
+        //var userId = claims.FindFirstValue(ClaimTypes.NameIdentifier);
+        //if (string.IsNullOrEmpty(userId) || !int.TryParse(userId, out int userIdValue))
+        //{
+        //    return new UnauthorizedError("The user ID is not a valid integer.");
+        //}
 
-        var revokedToken = await _revokedTokenRepository.SingleOrDefaultAsync(t => t.Jti == jti);
-        if (revokedToken is not null)
-        {
-            return new UnauthorizedError("The token has been revoked.");
-        }
+        //var revokedToken = await _revokedTokenRepository.SingleOrDefaultAsync(t => t.Jti == jti);
+        //if (revokedToken is not null)
+        //{
+        //    return new UnauthorizedError("The token has been revoked.");
+        //}
 
-        var user = await _userRepository.GetByIdAsync(userIdValue);
-        if (user is null)
-        {
-            return new UnauthorizedError("The user was not found.");
-        }
+        //var user = await _userRepository.GetByIdAsync(userIdValue);
+        //if (user is null)
+        //{
+        //    return new UnauthorizedError("The user was not found.");
+        //}
 
-        return _tokenService.GenerateRefreshToken(user, jti);
+        return _tokenService.GenerateAccessTokenInExchangeForRefreshToken(refrehsToken);
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace InteractiveScheduleUad.Api.Models;
 
-public class WeekSchedule
+public class WeekSchedule_DoNotUse
 {
     public int Id { get; set; }
     //public IEnumerable<Lesson>? Lessons { get; set; }

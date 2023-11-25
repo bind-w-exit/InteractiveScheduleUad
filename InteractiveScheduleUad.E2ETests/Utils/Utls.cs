@@ -5,10 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace InteractiveScheduleUad.E2ETests.Utils;
-internal static class ScheduleFileDataProcessingUtils
-{
-    static void ExtractAllTeachers()
-    {
 
+internal class Utls
+{
+    public static string EncaseInQuotes(string text)
+    {
+        return $"\"{text}\"";
     }
 }
