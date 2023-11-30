@@ -30,4 +30,11 @@ public static class Utls
 
         return entityToReturn;
     }
+
+    // gets object property name and returns that property value
+    public static ReturnT? GetPropertyValue<ReturnT>(object obj, string propertyName)
+    {
+        ReturnT? value = (ReturnT)(obj.GetType().GetProperty(propertyName)?.GetValue(obj, null));
+        return value;
+    }
 }

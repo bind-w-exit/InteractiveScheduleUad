@@ -182,6 +182,9 @@ var app = builder.Build();
 // not sure if it works
 app.UseMiddleware<ErrorLoggingMiddleware>();
 
+// expose Content-Range header for react-admin
+app.UseMiddleware<HeadersMiddleware>();
+
 // enable cross-origin requests
 app.UseCors(builder => builder
            .AllowAnyOrigin()

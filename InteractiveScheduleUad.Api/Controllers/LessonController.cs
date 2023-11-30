@@ -70,11 +70,10 @@ public class LessonController : ControllerBase
     /// </summary>
     /// <response code="200">Returns the newly created lesson</response>
     [HttpPost]
-    //[Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin")]
     [ProducesResponseType(typeof(LessonForReadDto), (int)HttpStatusCode.OK)]
     public async Task<ActionResult<LessonForReadDto>> Post([FromBody] LessonForWriteDto lessonForWrite)
     {
-
         // create proxy for lazy loading to work right after creating the lesson
         var newLesson = _context.Lessons.CreateProxy((newLesson) =>
         {
@@ -96,12 +95,12 @@ public class LessonController : ControllerBase
     /// Updates a lesson.
     /// </summary>
     [HttpPut("{Id}")]
-    //[Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin")]
     [ProducesResponseType(typeof(LessonForReadDto), (int)HttpStatusCode.OK)]
     public async Task<ActionResult<LessonForReadDto>> Update(int Id, [FromBody] LessonForWriteDto lessonForWrite)
     {
         // validate the id
-        
+
         var lesson = _context.Lessons.AsNoTracking().FirstOrDefault(l => l.Id == Id);
         if (lesson == null)
         {
@@ -121,7 +120,6 @@ public class LessonController : ControllerBase
 
     private Lesson CreateLesson(LessonForWriteDto lessonForWrite)
     {
-
         // create proxy for lazy loading to work right after creating the lesson
 
         var newLesson = _context.Lessons.CreateProxy((newLesson) =>

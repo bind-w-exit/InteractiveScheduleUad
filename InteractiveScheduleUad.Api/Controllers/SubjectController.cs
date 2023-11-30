@@ -1,8 +1,12 @@
 ﻿using InteractiveScheduleUad.Api.Extensions;
 using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Services.Contracts;
+using InteractiveScheduleUad.Api.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using System;
+using System.Linq;
 using System.Net;
 
 namespace InteractiveScheduleUad.Api.Controllers;
@@ -12,10 +16,12 @@ namespace InteractiveScheduleUad.Api.Controllers;
 public class SubjectController : ControllerBase
 {
     private readonly ISubjectService _subjectService;
+    private readonly InteractiveScheduleUadApiDbContext _context;
 
-    public SubjectController(ISubjectService subjectService)
+    public SubjectController(ISubjectService subjectService, InteractiveScheduleUadApiDbContext context)
     {
         _subjectService = subjectService;
+        _context = context;
     }
 
     // GET: api/<SubjectController>
@@ -26,14 +32,65 @@ public class SubjectController : ControllerBase
     [HttpGet]
     [AllowAnonymous]
     [ProducesResponseType(typeof(IEnumerable<Subject>), (int)HttpStatusCode.OK)]
-    public async Task<ActionResult<IEnumerable<Subject>>> Get()
+    public async Task<ActionResult<IEnumerable<Subject>>> GetList(
+        [FromQuery] string range = $"[0, 999999]", 
+        [FromQuery] string sort = "[\"Id\", \"ASC\"]",
+        [FromQuery] string filter = "{}")
     {
-        var result = await _subjectService.GetAllAsync();
+        // Parse filter parameter
+        var filterParams = JsonConvert.DeserializeObject<Dictionary<string, string>>(filter);
+        IEnumerable<Subject> filteredResults = _context.Subjects.AsEnumerable();
+        if (filterParams.Count != 0)
+        {
+            var filterField = filterParams.Keys.First();
+            var filterValue = filterParams.Values.First();
 
-        if (result.IsFailed)
-            return result.Errors.First().ToObjectResult();
+            // filter subjects by filter field and value (filter field value should be a string)
+            filteredResults = filteredResults
+                .Where(s => Utls.GetPropertyValue<object>(s, filterField) == filterValue);
+        }
+
+        // Parse sort parameter
+        var sortParams = JsonConvert.DeserializeObject<string[]>(sort);
+        var sortField = sortParams[0];
+        var sortOrder = sortParams[1];
+
+        // TODO: make react-admin send fields in titlecase
+        // titlecase sort field
+        sortField = char.ToUpper(sortField[0]) + sortField[1..];
+
+        // sort subjects by sort field and order (sort field value should be a string)
+        IEnumerable<Subject> sortedResults;
+        if (sortOrder == "ASC")
+            sortedResults = filteredResults.OrderBy((s) => Utls.GetPropertyValue<object>(s, sortField));
         else
-            return Ok(result.Value);
+            sortedResults = filteredResults.OrderByDescending((s) => Utls.GetPropertyValue<object>(s, sortField));
+
+        // Parse range parameter
+        var rangeParams = JsonConvert.DeserializeObject<int[]>(range);
+        var rangeStart = rangeParams[0];
+        var rangeEnd = rangeParams[1];
+
+        // extract the range of subjects from the sorted results
+        var rangeLength = rangeEnd - rangeStart + 1;
+        var resultsRange = sortedResults.Skip(rangeStart).Take(rangeLength);
+
+        var totalCount = _context.Subjects.Count();
+        AddContentRangeHeader(rangeStart, rangeEnd, totalCount);
+
+        return Ok(resultsRange);
+
+        //if (result.IsFailed)
+        //    return result.Errors.First().ToObjectResult();
+        //else
+        //    return Ok(result.Value);
+    }
+
+    // React admin requires the total count of items to be returned in a custom header
+    private void AddContentRangeHeader(int rangeStart, int rangeEnd, int totalCount)
+    {
+        var totalCountHeader = $"subject {rangeStart}-{rangeEnd}/{totalCount}";
+        Response.Headers.Add("Content-Range", totalCountHeader);
     }
 
     // GET api/<SubjectController>/5
