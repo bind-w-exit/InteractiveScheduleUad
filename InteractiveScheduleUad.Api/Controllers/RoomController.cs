@@ -1,17 +1,20 @@
-﻿using InteractiveScheduleUad.Api.Extensions;
+﻿using InteractiveScheduleUad.Api.Controllers.Contracts;
+using InteractiveScheduleUad.Api.Extensions;
 using InteractiveScheduleUad.Api.Mappers;
 using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Models.Dtos;
 using InteractiveScheduleUad.Api.Services.Contracts;
+using InteractiveScheduleUad.Api.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Net;
 
 namespace InteractiveScheduleUad.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class RoomController : ControllerBase
+public class RoomController : ControllerBase, IReactAdminCompatible<Room>
 {
     private readonly IRoomService _roomService;
     private InteractiveScheduleUadApiDbContext _context;
@@ -24,25 +27,29 @@ public class RoomController : ControllerBase
 
     // GET: api/<RoomController>
     /// <summary>
-    /// Retrieves all rooms
+    /// Retrieves a list of rooms.
     /// </summary>
     /// <response code="200">Success - Returns an array of rooms</response>
     [HttpGet]
     [AllowAnonymous]
     [ProducesResponseType(typeof(IEnumerable<Room>), (int)HttpStatusCode.OK)]
-    public async Task<ActionResult<IEnumerable<RoomForReadDto>>> GetAll()
+    public async Task<ActionResult<IEnumerable<Room>>> GetList(
+        [FromQuery] string range = "[0, 999999]",
+        [FromQuery] string sort = "[\"Id\", \"ASC\"]",
+        [FromQuery] string filter = "{}")
     {
-        var allRooms = _context.Rooms;
-        var allRoomsForRead = allRooms.Select(RoomMapper.RoomToRoomForReadDto);
+        IEnumerable<Room> resultsRange = Utls
+           .FilterSortAndRangeDbSet<Room>(
+           _context,
+           range, sort, filter,
+           out int rangeStart, out int rangeEnd);
 
-        return Ok(allRoomsForRead);
+        var totalCount = _context.Subjects.Count();
+        Utls.AddContentRangeHeader(
+                   rangeStart, rangeEnd, totalCount,
+                   ControllerContext, Response);
 
-        //var result = await _roomService.GetAllAsync();
-
-        //if (result.IsFailed)
-        //    return result.Errors.First().ToObjectResult();
-        //else
-        //    return Ok(result.Value);
+        return Ok(resultsRange);
     }
 
     // GET api/<RoomController>/5
