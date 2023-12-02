@@ -67,7 +67,10 @@ public class AuthController : ControllerBase
     private ActionResult HandleResult<T>(Result<T> result)
     {
         if (result.IsFailed)
-            return result.Errors.First().ToObjectResult();
+        {
+            var objectResult = result.Errors.First().ToObjectResult();
+            return objectResult;
+        }
 
         return Ok(result.Value);
     }

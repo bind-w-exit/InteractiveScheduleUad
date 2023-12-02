@@ -102,7 +102,7 @@ public class AuthService : IAuthService
         // validate username and password
 
         if (user is null)
-            return new NotFoundError(nameof(User));
+            return new NotFoundError(userForLoginDto.UserName);
 
         if (!_hashService.VerifyPasswordHash(userForLoginDto.Password, user.PasswordHash, user.PasswordSalt))
             return new UnauthorizedError("Wrong password");

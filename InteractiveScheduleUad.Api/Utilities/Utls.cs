@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Globalization;
 
 namespace InteractiveScheduleUad.Api.Utilities;
@@ -43,7 +44,8 @@ public static class Utls
         out int rangeStart, out int rangeEnd) where DbSetRecordT : class
     {
         // Parse filter parameter
-        var filterParams = JsonConvert.DeserializeObject<Dictionary<string, string>>(filter);
+        var filterParams = JsonConvert.DeserializeObject<Dictionary<string, object>>(filter);
+
         // the filtering is client-side. Could be a bottleneck :c
         var filteredResults = _context.Set<DbSetRecordT>().AsEnumerable();
         if (filterParams.Count != 0)
@@ -53,9 +55,22 @@ public static class Utls
 
             filterField = Utls.ToTitleCase(filterField);
 
-            // filter records by filter field and value (value of filter field should be a string)
-            filteredResults = filteredResults
-                .Where(s => Utls.GetPropertyValue<string>(s, filterField).Contains(filterValue));
+            if (filterField == "Id" && filterValue.GetType().Name == "JArray")
+            {
+                // get only records with Ids specified in filter value
+                var filterValueAsJArray = (JArray)filterValue;
+                var ids = filterValueAsJArray.ToObject<int[]>();
+                filteredResults = filteredResults.Where(s => ids.Contains(Utls.GetPropertyValue<int>(s, "Id")));
+                //var one = 1;
+            }
+            else
+            {
+                // filter records by filter field and value (value of filter field should be a string)
+                filteredResults = filteredResults
+                    .Where(s =>
+                    Utls.GetPropertyValue<string>(s, filterField).ToLower()
+                    .Contains(filterValue.ToString().ToLower()));
+            }
         }
 
         // Parse sort parameter

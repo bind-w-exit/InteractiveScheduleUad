@@ -19,6 +19,4 @@ public class TeacherForReadDto
     // navigations
 
     public virtual TeacherDepartmentForReadDto? Department { get; set; }
-
-    // ignore
 }

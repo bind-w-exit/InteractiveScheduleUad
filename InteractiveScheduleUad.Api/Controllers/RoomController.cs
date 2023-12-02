@@ -44,7 +44,7 @@ public class RoomController : ControllerBase, IReactAdminCompatible<Room>
            range, sort, filter,
            out int rangeStart, out int rangeEnd);
 
-        var totalCount = _context.Subjects.Count();
+        var totalCount = _context.Rooms.Count();
         Utls.AddContentRangeHeader(
                    rangeStart, rangeEnd, totalCount,
                    ControllerContext, Response);

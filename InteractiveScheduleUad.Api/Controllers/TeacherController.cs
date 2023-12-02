@@ -1,8 +1,10 @@
-﻿using InteractiveScheduleUad.Api.Extensions;
+﻿using InteractiveScheduleUad.Api.Controllers.Contracts;
+using InteractiveScheduleUad.Api.Extensions;
 using InteractiveScheduleUad.Api.Mappers;
 using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Models.Dtos;
 using InteractiveScheduleUad.Api.Services.Contracts;
+using InteractiveScheduleUad.Api.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +15,7 @@ namespace InteractiveScheduleUad.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class TeacherController : ControllerBase
+public class TeacherController : ControllerBase, IReactAdminCompatible<TeacherForReadDto>
 {
     private readonly ITeacherService _teacherService;
     private InteractiveScheduleUadApiDbContext _context;
@@ -26,21 +28,31 @@ public class TeacherController : ControllerBase
 
     // GET: api/<TeacherController>
     /// <summary>
-    /// Retrieves all teachers
+    /// Retrieves a list of teachers.
     /// </summary>
     /// <response code="200">Success - Returns an array of teachers</response>
     [HttpGet]
     [AllowAnonymous]
     [ProducesResponseType(typeof(IEnumerable<TeacherForReadDto>), (int)HttpStatusCode.OK)]
-    public async Task<ActionResult<IEnumerable<TeacherForReadDto>>> GetAll()
+    public async Task<ActionResult<IEnumerable<TeacherForReadDto>>> GetList(
+        [FromQuery] string range = "[0, 999999]",
+        [FromQuery] string sort = "[\"Id\", \"ASC\"]",
+        [FromQuery] string filter = "{}")
     {
-        var result = await _teacherService.GetAllAsync();
-        var teachersForRead = result.Value.Select(TeacherMapper.TeacherToTeacherForReadDto);
+        var resultsRange = Utls
+           .FilterSortAndRangeDbSet<Teacher>(
+            _context,
+            range, sort, filter,
+            out int rangeStart, out int rangeEnd);
 
-        if (result.IsFailed)
-            return result.Errors.First().ToObjectResult();
-        else
-            return Ok(teachersForRead);
+        var totalCount = _context.Teachers.Count();
+        Utls.AddContentRangeHeader(
+            rangeStart, rangeEnd, totalCount,
+            ControllerContext, Response);
+
+        var resultsForRead = resultsRange.Select(TeacherMapper.TeacherToTeacherForReadDto);
+
+        return Ok(resultsForRead);
     }
 
     // GET api/<TeacherController>/5

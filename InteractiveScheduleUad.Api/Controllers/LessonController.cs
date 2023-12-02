@@ -1,4 +1,5 @@
-﻿using InteractiveScheduleUad.Api.Mappers;
+﻿using InteractiveScheduleUad.Api.Controllers.Contracts;
+using InteractiveScheduleUad.Api.Mappers;
 using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Models.Dtos;
 using InteractiveScheduleUad.Api.Utilities;
@@ -12,7 +13,7 @@ namespace InteractiveScheduleUad.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class LessonController : ControllerBase
+public class LessonController : ControllerBase, IReactAdminCompatible<LessonForReadDto>
 {
     private readonly InteractiveScheduleUadApiDbContext _context;
 
@@ -22,22 +23,31 @@ public class LessonController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves all lessons.
+    /// Retrieves a list of lessons.
     /// </summary>
     /// <response code="200">Success - Returns all lessons</response>
     [HttpGet]
     [AllowAnonymous]
     [ProducesResponseType(typeof(LessonForReadDto[]), (int)HttpStatusCode.OK)]
-    public ActionResult<IEnumerable<LessonForReadDto>> GetAll()
+    public async Task<ActionResult<IEnumerable<LessonForReadDto>>> GetList(
+        [FromQuery] string range = "[0, 999999]",
+        [FromQuery] string sort = "[\"Id\", \"ASC\"]",
+        [FromQuery] string filter = "{}")
     {
-        var lessons = _context.Lessons;
-        var lessonsList = lessons.ToList();
+        var resultsRange = Utls
+           .FilterSortAndRangeDbSet<Lesson>(
+           _context,
+           range, sort, filter,
+           out int rangeStart, out int rangeEnd);
 
-        var lessonsForRead = lessonsList.Select(LessonMapper.LessonToLessonForReadDto);
+        var totalCount = _context.Lessons.Count();
+        Utls.AddContentRangeHeader(
+            rangeStart, rangeEnd, totalCount,
+            ControllerContext, Response);
 
-        var result = new ActionResult<IEnumerable<LessonForReadDto>>(lessonsForRead);
+        var resultsForRead = resultsRange.Select(LessonMapper.LessonToLessonForReadDto);
 
-        return result;
+        return Ok(resultsForRead);
     }
 
     /// <summary>
