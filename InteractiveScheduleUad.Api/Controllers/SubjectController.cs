@@ -83,15 +83,15 @@ public class SubjectController : ControllerBase, IReactAdminCompatible<Subject>
     /// <summary>
     /// Creates a new subject
     /// </summary>
-    /// <param name="subjectName">The subject name</param>
+    /// <param name="subject">The subject to create</param>
     /// <response code="201">Created - Returns the created subject</response>
     /// <response code="400">BadRequest - One or more validation errors occurred</response>
     [HttpPost]
     [Authorize(Roles = "Admin")]
     [ProducesResponseType(typeof(Subject), (int)HttpStatusCode.Created)]
-    public async Task<ActionResult<Subject>> Post([FromBody] string subjectName)
+    public async Task<ActionResult<Subject>> Post([FromBody] Subject subject)
     {
-        var result = await _subjectService.CreateAsync(subjectName);
+        var result = await _subjectService.CreateAsync(subject);
 
         if (result.IsFailed)
             return result.Errors.First().ToObjectResult();

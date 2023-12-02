@@ -15,10 +15,8 @@ public class SubjectService : ISubjectService
         _subjectRepository = subjectRepository;
     }
 
-    public async Task<Result<Subject>> CreateAsync(string name)
+    public async Task<Result<Subject>> CreateAsync(Subject subject)
     {
-        Subject subject = new() { Name = name };
-
         await _subjectRepository.InsertAsync(subject);
         await _subjectRepository.SaveChangesAsync();
 

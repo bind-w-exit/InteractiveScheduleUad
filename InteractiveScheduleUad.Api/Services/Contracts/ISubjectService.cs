@@ -5,7 +5,7 @@ namespace InteractiveScheduleUad.Api.Services.Contracts;
 
 public interface ISubjectService
 {
-    Task<Result<Subject>> CreateAsync(string name);
+    Task<Result<Subject>> CreateAsync(Subject subject);
 
     Task<Result<IEnumerable<Subject>>> GetAllAsync();
 

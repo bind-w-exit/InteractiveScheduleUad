@@ -208,8 +208,12 @@ public class AuthAndAuthorizationTests : IAsyncLifetime
 
         var protectedEndpoint = "Subject";
         var randomName = Guid.NewGuid().ToString();
+        var subjectForWriteDto = new Subject
+        {
+            Name = randomName
+        };
 
-        var request = new RestRequest(protectedEndpoint).AddJsonBody(Utls.EncaseInQuotes(randomName));
+        var request = new RestRequest(protectedEndpoint).AddJsonBody(subjectForWriteDto);
         var response = client.Post(request);
 
         var responseContent = response.Content;

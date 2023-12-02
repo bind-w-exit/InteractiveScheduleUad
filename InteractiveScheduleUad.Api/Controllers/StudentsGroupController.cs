@@ -63,17 +63,17 @@ public class StudentsGroupController : ControllerBase
     /// <summary>
     /// Creates a new students group
     /// </summary>
-    /// <param name="groupName">The students group name</param>
+    /// <param name="groupForWrite">The students group name</param>
     /// <response code="201">Created - Returns the created students group</response>
     /// <response code="400">BadRequest - One or more validation errors occurred</response>
     [HttpPost]
     //[Authorize(Roles = "Admin")]
     [ProducesResponseType(typeof(StudentsGroupForReadDto), (int)HttpStatusCode.Created)]
-    public async Task<ActionResult<StudentsGroupForReadDto>> Post([FromBody] string groupName)
+    public async Task<ActionResult<StudentsGroupForReadDto>> Post([FromBody] StudentsGroupForWriteDto groupForWrite)
     {
         // creates a new group. May throw due to unique index constraint
 
-        var newGroup = new StudentsGroup { GroupName = groupName };
+        var newGroup = new StudentsGroup { GroupName = groupForWrite.GroupName };
         _context.StudentsGroups.Add(newGroup);
 
         await _context.SaveChangesAsync();

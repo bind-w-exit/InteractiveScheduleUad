@@ -77,23 +77,24 @@ public class ScheduleTests : IAsyncLifetime
     {
         // Arrange
         // the payload has to be wrapped in quotes
-        string groupName = "\"ІСТ-5\"";
+        string groupName = "ІСТ-5";
+        var groupForWrite = new StudentsGroupForWriteDto { GroupName = groupName };
 
         // Act
-        var response = client.PostJson<string, StudentsGroupForReadDto>(groupsEndpoint, groupName);
+        var response = client.PostJson<StudentsGroupForWriteDto, StudentsGroupForReadDto>
+            (groupsEndpoint, groupForWrite);
 
         string getEndpoint = $"{groupsEndpoint}/{response.Id}";
         var getResponse = client.GetJson<StudentsGroupForReadDto>(getEndpoint);
 
         // Assert
-        Assert.Equal(groupName, $"\"{response.GroupName}\"");
-        Assert.Equal(groupName, $"\"{getResponse.GroupName}\"");
+        Assert.Equal(groupName, response.GroupName);
+        Assert.Equal(groupName, getResponse.GroupName);
     }
 
     [Fact]
     public void CreatingLesson_CompletesAsExpected()
     {
-        // read "raw" schedule from file
         var rawScheduleObj = ReadRawScheduleFromFile();
 
         Day rawScheduleMonday = rawScheduleObj.monday;
@@ -112,8 +113,6 @@ public class ScheduleTests : IAsyncLifetime
     public void CreatingScheduleLesson_CompletesAsExpected()
     {
         // schedule lesson is just like a regular lesson, but with context
-
-        // read "raw" schedule from file
 
         var rawScheduleObj = ReadRawScheduleFromFile();
 
@@ -230,8 +229,9 @@ public class ScheduleTests : IAsyncLifetime
         var rawScheduleMondayClasses = rawScheduleMonday.classes;
 
         // POST new group
-        var studentsGroup = client.PostJson<string, StudentsGroupForReadDto>(
-            "StudentsGroup", Utls.EncaseInQuotes("ІСТ-5")
+        var groupForWrite = new StudentsGroupForWriteDto { GroupName = "ІСТ-5" };
+        var studentsGroup = client.PostJson<StudentsGroupForWriteDto, StudentsGroupForReadDto>(
+            "StudentsGroup", groupForWrite
             );
         var studentsGroupId = studentsGroup.Id;
 
@@ -407,8 +407,9 @@ public class ScheduleTests : IAsyncLifetime
             WeekIndex = rawScheduleClass.week ?? 0,
         };
 
-        var group = client.EnsureExists<StudentsGroup, string>(
-            groupsEndpoint, null, Utls.EncaseInQuotes(groupName), (g) => g.GroupName == groupName);
+        var groupForWrite = new StudentsGroupForWriteDto { GroupName = groupName };
+        var group = client.EnsureExists<StudentsGroup, StudentsGroupForWriteDto>(
+            groupsEndpoint, null, groupForWrite, (g) => g.GroupName == groupName);
         var groupId = group.Id;
 
         FullContextForWriteDto fullContext = new()
