@@ -1,8 +1,11 @@
-﻿using InteractiveScheduleUad.Api.Extensions;
+﻿using InteractiveScheduleUad.Api.Controllers.Contracts;
+using InteractiveScheduleUad.Api.Extensions;
 using InteractiveScheduleUad.Api.Mappers;
 using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Models.Dtos;
+using InteractiveScheduleUad.Api.Models.Filters;
 using InteractiveScheduleUad.Api.Services.Contracts;
+using InteractiveScheduleUad.Api.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +15,7 @@ namespace InteractiveScheduleUad.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class StudentsGroupController : ControllerBase
+public class StudentsGroupController : ControllerBase, IReactAdminCompatible<StudentsGroupForReadDto>
 {
     private readonly IStudentsGroupService _studentsGroupService;
     private readonly InteractiveScheduleUadApiDbContext _context;
@@ -24,20 +27,31 @@ public class StudentsGroupController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves all students groups
+    /// Retrieves a list of students groups.
     /// </summary>
     /// <response code="200">Success - Returns an array of students groups</response>
     [HttpGet]
     [AllowAnonymous]
     [ProducesResponseType(typeof(IEnumerable<StudentsGroupForReadDto>), (int)HttpStatusCode.OK)]
-    public async Task<ActionResult<IEnumerable<StudentsGroupForReadDto>>> Get()
+    public async Task<ActionResult<IEnumerable<StudentsGroupForReadDto>>> GetList(
+        [FromQuery] string range = "[0, 999999]",
+        [FromQuery] string sort = "[\"Id\", \"ASC\"]",
+        [FromQuery] string filter = "{}")
     {
-        var result = await _studentsGroupService.GetAllAsync();
+        var resultsRange = Utls
+            .FilterSortAndRangeDbSet<StudentsGroup, StudentsGroupForReadDtoFilter>(
+            _context,
+            range, sort, filter,
+            out int rangeStart, out int rangeEnd);
 
-        if (result.IsFailed)
-            return result.Errors.First().ToObjectResult();
-        else
-            return Ok(result.Value);
+        var totalCount = _context.StudentsGroups.Count();
+        Utls.AddContentRangeHeader(
+            rangeStart, rangeEnd, totalCount,
+            ControllerContext, Response);
+
+        var resultsForRead = resultsRange.Select(StudentsGroupMapper.StudentsGroupToStudentsGroupForReadDto);
+
+        return Ok(resultsForRead);
     }
 
     /// <summary>
@@ -73,7 +87,7 @@ public class StudentsGroupController : ControllerBase
     {
         // creates a new group. May throw due to unique index constraint
 
-        var newGroup = new StudentsGroup { GroupName = groupForWrite.GroupName };
+        var newGroup = new StudentsGroup { Name = groupForWrite.Name };
         _context.StudentsGroups.Add(newGroup);
 
         await _context.SaveChangesAsync();

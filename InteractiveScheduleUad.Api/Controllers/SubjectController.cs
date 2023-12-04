@@ -1,7 +1,9 @@
-﻿using Azure;
+﻿using AutoFilterer.Extensions;
+using Azure;
 using InteractiveScheduleUad.Api.Controllers.Contracts;
 using InteractiveScheduleUad.Api.Extensions;
 using InteractiveScheduleUad.Api.Models;
+using InteractiveScheduleUad.Api.Models.Filters;
 using InteractiveScheduleUad.Api.Services.Contracts;
 using InteractiveScheduleUad.Api.Utilities;
 using Microsoft.AspNetCore.Authorization;
@@ -28,7 +30,7 @@ public class SubjectController : ControllerBase, IReactAdminCompatible<Subject>
 
     // GET: api/<SubjectController>
     /// <summary>
-    /// Retrieves all subjects
+    /// Retrieves a list of subjects.
     /// </summary>
     /// <response code="200">Success - Returns an array of subjects</response>
     [HttpGet]
@@ -40,10 +42,13 @@ public class SubjectController : ControllerBase, IReactAdminCompatible<Subject>
         [FromQuery] string filter = "{}")
     {
         IEnumerable<Subject> resultsRange = Utls
-            .FilterSortAndRangeDbSet<Subject>(
+            .FilterSortAndRangeDbSet<Subject, SubjectForReadDtoFilter>(
             _context,
             range, sort, filter,
             out int rangeStart, out int rangeEnd);
+
+        //var subjectFilterDto = JsonConvert.DeserializeObject<SubjectForReadDtoFilter>(filter);
+        //var filtered = _context.Subjects.ApplyFilter(subjectFilterDto).ToList();
 
         var totalCount = _context.Subjects.Count();
         Utls.AddContentRangeHeader(
@@ -105,7 +110,7 @@ public class SubjectController : ControllerBase, IReactAdminCompatible<Subject>
     /// Updates an existing subject
     /// </summary>
     /// <param name="id">The ID of the subject to update</param>
-    /// <param name="newSubjectName">The updated subject name</param>
+    /// <param name="subject">The updated subject</param>
     /// <response code="200">Success - Successfully updated</response>
     /// <response code="400">BadRequest - One or more validation errors occurred</response>
     /// <response code="404">NotFound - Subject with the specified ID was not found</response>
@@ -113,9 +118,9 @@ public class SubjectController : ControllerBase, IReactAdminCompatible<Subject>
     [Authorize(Roles = "Admin")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-    public async Task<ActionResult> Put(int id, [FromBody] string newSubjectName)
+    public async Task<ActionResult> Put(int id, [FromBody] Subject subject)
     {
-        var result = await _subjectService.UpdateAsync(id, newSubjectName);
+        var result = await _subjectService.UpdateAsync(id, subject.Name);
 
         if (result.IsFailed)
             return result.Errors.First().ToObjectResult();

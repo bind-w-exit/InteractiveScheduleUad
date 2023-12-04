@@ -14,7 +14,7 @@ public class TokenService : ITokenService
     private readonly string _issuer;
     private readonly string _key;
 
-    private readonly int _accessTokenLifetimeMins = 30;
+    private readonly int _accessTokenLifetimeMins = 5;
     private readonly int _refreshTokenLifetimeDays = 14;
 
     private InteractiveScheduleUadApiDbContext _dbContext;

@@ -1,8 +1,10 @@
-﻿using InteractiveScheduleUad.Api.Errors;
+﻿using InteractiveScheduleUad.Api.Controllers.Contracts;
+using InteractiveScheduleUad.Api.Errors;
 using InteractiveScheduleUad.Api.Extensions;
 using InteractiveScheduleUad.Api.Mappers;
 using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Models.Dtos;
+using InteractiveScheduleUad.Api.Models.Filters;
 using InteractiveScheduleUad.Api.Services.Contracts;
 using InteractiveScheduleUad.Api.Utilities;
 using Microsoft.AspNetCore.Authorization;
@@ -16,7 +18,7 @@ namespace InteractiveScheduleUad.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class ScheduleLessonController : ControllerBase
+public class ScheduleLessonController : ControllerBase, IReactAdminCompatible<ScheduleLessonForReadDto>
 {
     private readonly InteractiveScheduleUadApiDbContext _context;
 
@@ -26,23 +28,32 @@ public class ScheduleLessonController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves all schedule lessons.
+    /// Retrieves a list of schedule lessons.
     /// </summary>
-    /// <response code="200">Success - Returns all lessons that belong to the group that is specified by Id</response>
-    /// <response code="404">NotFound - Students group with the specified ID was not found</response>
+    /// <response code="200">Success - Returns a list of schedule lessons</response>
     [HttpGet]
     [AllowAnonymous]
-    [ProducesResponseType(typeof(StudentsGroupWithSchedulesDto), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ScheduleLessonForReadDto), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-    public ActionResult<IEnumerable<ScheduleLessonForReadDto>> GetAll()
+    public async Task<ActionResult<IEnumerable<ScheduleLessonForReadDto>>> GetList(
+        [FromQuery] string range = "[0, 999999]",
+        [FromQuery] string sort = "[\"Id\", \"ASC\"]",
+        [FromQuery] string filter = "{}")
     {
-        var lessons = _context.ScheduleLessonJunctions;
-        var lessonsList = lessons.ToList();
+        var resultsRange = Utls
+           .FilterSortAndRangeDbSet<ScheduleLessonJunction, ScheduleLessonForReadDtoFilter>(
+            _context,
+            range, sort, filter,
+            out int rangeStart, out int rangeEnd);
 
-        var lessonsForRead = lessonsList.Select(ScheduleLessonMapper.ScheduleLessonToScheduleLessonForRead);
-        var result = new ActionResult<IEnumerable<ScheduleLessonForReadDto>>(lessonsForRead);
+        var totalCount = _context.ScheduleLessonJunctions.Count();
+        Utls.AddContentRangeHeader(
+            rangeStart, rangeEnd, totalCount,
+            ControllerContext, Response);
 
-        return result;
+        var resultsForRead = resultsRange.Select(ScheduleLessonMapper.ScheduleLessonToScheduleLessonForRead);
+
+        return Ok(resultsForRead);
     }
 
     /// <summary>
@@ -78,7 +89,7 @@ public class ScheduleLessonController : ControllerBase
     /// <response code="400">BadRequest - One or more validation errors occurred</response>
     [HttpPost]
     [Authorize(Roles = "Admin")]
-    [ProducesResponseType(typeof(ScheduleLessonJunction), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ScheduleLessonForReadDto), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult<ScheduleLessonForReadDto>> Post([FromBody] ScheduleLessonForWriteDto lessonForWrite)
     {
@@ -103,7 +114,6 @@ public class ScheduleLessonController : ControllerBase
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult<ScheduleLessonForReadDto>> Update(int Id, [FromBody] ScheduleLessonForWriteDto lessonForWrite)
     {
-
         // get the lesson, but don't track it
         var lesson = _context.ScheduleLessonJunctions.AsNoTracking().FirstOrDefault(l => l.Id == Id);
         if (lesson == null)

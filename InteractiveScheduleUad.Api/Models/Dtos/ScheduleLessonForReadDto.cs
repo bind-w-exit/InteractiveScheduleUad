@@ -1,4 +1,6 @@
-﻿namespace InteractiveScheduleUad.Api.Models.Dtos;
+﻿using InteractiveScheduleUad.Api.Models.Filters;
+
+namespace InteractiveScheduleUad.Api.Models.Dtos;
 
 // different from just lessons
 public class ScheduleLessonForReadDto

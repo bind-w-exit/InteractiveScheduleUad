@@ -19,7 +19,7 @@ public class StudentsGroupService : IStudentsGroupService
 
     public async Task<Result<StudentsGroupForReadDto>> CreateAsync(string name)
     {
-        StudentsGroup studentsGroup = new() { GroupName = name };
+        StudentsGroup studentsGroup = new() { Name = name };
 
         await _studentsGroupRepository.InsertAsync(studentsGroup);
         await _studentsGroupRepository.SaveChangesAsync();
@@ -72,7 +72,7 @@ public class StudentsGroupService : IStudentsGroupService
 
         if (studentsGroup is not null)
         {
-            studentsGroup.GroupName = newName;
+            studentsGroup.Name = newName;
 
             _studentsGroupRepository.Update(studentsGroup);
             await _studentsGroupRepository.SaveChangesAsync();

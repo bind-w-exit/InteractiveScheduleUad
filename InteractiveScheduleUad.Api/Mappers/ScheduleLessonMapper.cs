@@ -19,7 +19,7 @@ public static partial class ScheduleLessonMapper
 
     private static StudentsGroup StringToStudentsGroup(string group)
     {
-        return new StudentsGroup { GroupName = group };
+        return new StudentsGroup { Name = group };
     }
 
     //private static RoomForRead StringToStudentsGroup(string group)

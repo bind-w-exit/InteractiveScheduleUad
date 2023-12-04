@@ -3,6 +3,7 @@ using InteractiveScheduleUad.Api.Extensions;
 using InteractiveScheduleUad.Api.Mappers;
 using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Models.Dtos;
+using InteractiveScheduleUad.Api.Models.Filters;
 using InteractiveScheduleUad.Api.Services.Contracts;
 using InteractiveScheduleUad.Api.Utilities;
 using Microsoft.AspNetCore.Authorization;
@@ -14,7 +15,7 @@ namespace InteractiveScheduleUad.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class RoomController : ControllerBase, IReactAdminCompatible<Room>
+public class RoomController : ControllerBase, IReactAdminCompatible<RoomForReadDto>
 {
     private readonly IRoomService _roomService;
     private InteractiveScheduleUadApiDbContext _context;
@@ -32,14 +33,14 @@ public class RoomController : ControllerBase, IReactAdminCompatible<Room>
     /// <response code="200">Success - Returns an array of rooms</response>
     [HttpGet]
     [AllowAnonymous]
-    [ProducesResponseType(typeof(IEnumerable<Room>), (int)HttpStatusCode.OK)]
-    public async Task<ActionResult<IEnumerable<Room>>> GetList(
+    [ProducesResponseType(typeof(IEnumerable<RoomForReadDto>), (int)HttpStatusCode.OK)]
+    public async Task<ActionResult<IEnumerable<RoomForReadDto>>> GetList(
         [FromQuery] string range = "[0, 999999]",
         [FromQuery] string sort = "[\"Id\", \"ASC\"]",
         [FromQuery] string filter = "{}")
     {
         IEnumerable<Room> resultsRange = Utls
-           .FilterSortAndRangeDbSet<Room>(
+           .FilterSortAndRangeDbSet<Room, RoomForReadDtoFilter>(
            _context,
            range, sort, filter,
            out int rangeStart, out int rangeEnd);
@@ -49,7 +50,9 @@ public class RoomController : ControllerBase, IReactAdminCompatible<Room>
                    rangeStart, rangeEnd, totalCount,
                    ControllerContext, Response);
 
-        return Ok(resultsRange);
+        var resultsForRead = resultsRange.Select(RoomMapper.RoomToRoomForReadDto);
+
+        return Ok(resultsForRead);
     }
 
     // GET api/<RoomController>/5

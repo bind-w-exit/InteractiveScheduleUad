@@ -14,6 +14,6 @@ public static partial class FullContextMapper
 
     private static StudentsGroup StudentsGroupStringToStudentsGroup(string studentsGroupForWrite)
     {
-        return new StudentsGroup { GroupName = studentsGroupForWrite };
+        return new StudentsGroup { Name = studentsGroupForWrite };
     }
 }

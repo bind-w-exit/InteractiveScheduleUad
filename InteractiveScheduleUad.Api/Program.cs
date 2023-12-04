@@ -1,3 +1,4 @@
+using AutoFilterer.Swagger;
 using FluentValidation;
 using InteractiveScheduleUad.Api;
 using InteractiveScheduleUad.Api.Middleware;
@@ -33,6 +34,8 @@ builder.Services.AddControllers(options =>
 }).AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    // keep uppercase letters at the start of field names in json responses
+    //options.JsonSerializerOptions.PropertyNamingPolicy = null;
 });
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -71,6 +74,9 @@ builder.Services.AddSwaggerGen(options =>
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
     // note: generation of documentation file has to be enabled in project properties:
     // Project properties -> Build -> Output -> Documentation file
+
+    // not sure if it works
+    options.UseAutoFiltererParameters();
 });
 
 // Database
@@ -103,7 +109,7 @@ else
         connectionString = GetDbConnectionString(builder.Configuration);
     }
 
-    //connectionString = "Host=localhost;Database=realSCDB;Username=postgres;Password=1;IncludeErrorDetail=true";
+    connectionString = "Host=localhost;Database=realSCDB;Username=postgres;Password=1;IncludeErrorDetail=true";
     //var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
     // connect to npgsql db. Exit on failure

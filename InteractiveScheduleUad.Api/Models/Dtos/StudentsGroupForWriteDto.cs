@@ -2,5 +2,5 @@
 
 public class StudentsGroupForWriteDto
 {
-    public string GroupName { get; set; }
+    public string Name { get; set; }
 }

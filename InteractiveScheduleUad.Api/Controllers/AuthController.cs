@@ -56,9 +56,9 @@ public class AuthController : ControllerBase
     [AllowAnonymous]
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.BadRequest)]
-    public async Task<ActionResult<string>> RefreshToken([FromBody] string refreshToken)
+    public async Task<ActionResult<string>> RefreshToken([FromBody] Token refreshToken)
     {
-        var result = await _authService.RefreshToken(refreshToken);
+        var result = await _authService.RefreshToken(refreshToken.Value);
         return HandleResult(result);
     }
 

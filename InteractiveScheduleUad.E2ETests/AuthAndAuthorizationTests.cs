@@ -130,8 +130,8 @@ public class AuthAndAuthorizationTests : IAsyncLifetime
         var config = await ApiConfigRetriever.GetBasePathAndAccessToken();
         var userClient = GetClient(loginResponse.AccessToken, config.BasePath);
 
-        var newAccessToken = userClient.PostJson<string, string>
-            ($"{authenticationEndpoint}/RefreshToken", Utls.EncaseInQuotes(refreshToken));
+        var newAccessToken = userClient.PostJson<Token, string>
+            ($"{authenticationEndpoint}/RefreshToken", new Token { Value = refreshToken });
 
         var refreshedClient = GetClient(newAccessToken, config.BasePath);
 

@@ -7,7 +7,7 @@ public class StudentsGroup
 {
     public int Id { get; set; }
 
-    public string GroupName { get; set; }
+    public string Name { get; set; }
 
     public virtual IEnumerable<FullContextJunction>? FullContexts { get; set; }
 }

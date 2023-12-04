@@ -1,8 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace InteractiveScheduleUad.Api.Models;
 
-// aka contextualized lesson. different from just lesson
+// aka contextualized lesson.Different from just lesson
+[Index(nameof(FullContextId), IsUnique = true)]
 public class ScheduleLessonJunction
 {
     public int Id { get; set; }

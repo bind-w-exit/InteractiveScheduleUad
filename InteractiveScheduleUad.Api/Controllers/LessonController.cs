@@ -1,11 +1,14 @@
-﻿using InteractiveScheduleUad.Api.Controllers.Contracts;
+﻿using AutoFilterer.Extensions;
+using InteractiveScheduleUad.Api.Controllers.Contracts;
 using InteractiveScheduleUad.Api.Mappers;
 using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Models.Dtos;
+using InteractiveScheduleUad.Api.Models.Filters;
 using InteractiveScheduleUad.Api.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using SQLitePCL;
 using System.Net;
 
@@ -35,7 +38,7 @@ public class LessonController : ControllerBase, IReactAdminCompatible<LessonForR
         [FromQuery] string filter = "{}")
     {
         var resultsRange = Utls
-           .FilterSortAndRangeDbSet<Lesson>(
+           .FilterSortAndRangeDbSet<Lesson, LessonForReadDtoFilter>(
            _context,
            range, sort, filter,
            out int rangeStart, out int rangeEnd);

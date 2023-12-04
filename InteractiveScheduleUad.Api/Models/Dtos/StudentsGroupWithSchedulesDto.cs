@@ -2,7 +2,7 @@
 
 public class StudentsGroupWithSchedulesDto
 {
-    public required string GroupName { get; set; }
+    public string Name { get; set; }
 
     public WeekScheduleForReadDto? FirstWeekSchedule { get; set; }
 

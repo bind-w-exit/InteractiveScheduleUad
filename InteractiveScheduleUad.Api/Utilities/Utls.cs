@@ -1,9 +1,14 @@
-﻿using Azure;
+﻿using AutoFilterer.Extensions;
+using AutoFilterer.Types;
+using Azure;
+using InteractiveScheduleUad.Api.Models.Filters;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Diagnostics;
 using System.Globalization;
+using System.Reflection.Metadata.Ecma335;
 
 namespace InteractiveScheduleUad.Api.Utilities;
 
@@ -40,38 +45,43 @@ public static class Utls
     /// First filters, then sorts, and finally extracts a range of records from the sorted results.
     /// The operations are required by react-admin
     /// </summary>
-    public static IEnumerable<DbSetRecordT> FilterSortAndRangeDbSet<DbSetRecordT>(InteractiveScheduleUadApiDbContext _context, string range, string sort, string filter,
-        out int rangeStart, out int rangeEnd) where DbSetRecordT : class
+    public static IEnumerable<DbSetRecordT> FilterSortAndRangeDbSet<DbSetRecordT, FilterT>(InteractiveScheduleUadApiDbContext _context,
+        string range, string sort, string filter,
+        out int rangeStart, out int rangeEnd) where DbSetRecordT : class where FilterT : FilterBase
     {
+        Debug.WriteLine($"filter: {filter}", "FilterSortAndRangeDbSet");
+
         // Parse filter parameter
-        var filterParams = JsonConvert.DeserializeObject<Dictionary<string, object>>(filter);
+        var filterObject = JsonConvert.DeserializeObject<Dictionary<string, object>>(filter);
 
-        // the filtering is client-side. Could be a bottleneck :c
-        var filteredResults = _context.Set<DbSetRecordT>().AsEnumerable();
-        if (filterParams.Count != 0)
-        {
-            var filterField = filterParams.Keys.First();
-            var filterValue = filterParams.Values.First();
+        var records = _context.Set<DbSetRecordT>();
+        var filterDto = JsonConvert.DeserializeObject<FilterT>(filter);
+        var filteredResults = _context.Set<DbSetRecordT>().ApplyFilter(filterDto);
 
-            filterField = Utls.ToTitleCase(filterField);
+        //if (filterObject.Count != 0 && false) // TODO: re-enable filtering
+        //{
+        //    var filterField = filterObject.Keys.First();
+        //    var filterValue = filterObject.Values.First();
 
-            if (filterField == "Id" && filterValue.GetType().Name == "JArray")
-            {
-                // get only records with Ids specified in filter value
-                var filterValueAsJArray = (JArray)filterValue;
-                var ids = filterValueAsJArray.ToObject<int[]>();
-                filteredResults = filteredResults.Where(s => ids.Contains(Utls.GetPropertyValue<int>(s, "Id")));
-                //var one = 1;
-            }
-            else
-            {
-                // filter records by filter field and value (value of filter field should be a string)
-                filteredResults = filteredResults
-                    .Where(s =>
-                    Utls.GetPropertyValue<string>(s, filterField).ToLower()
-                    .Contains(filterValue.ToString().ToLower()));
-            }
-        }
+        //    filterField = Utls.ToTitleCase(filterField);
+
+        //    if (filterField == "Id" && filterValue.GetType().Name == "JArray")
+        //    {
+        //        // get only records with Ids specified in filter value
+        //        var filterValueAsJArray = (JArray)filterValue;
+        //        var ids = filterValueAsJArray.ToObject<int[]>();
+        //        filteredResults = filteredResults.Where(s => ids.Contains(Utls.GetPropertyChainValue<int>(s, "Id")));
+        //        //var one = 1;
+        //    }
+        //    else
+        //    {
+        //        // filter records by filter field and value (value of filter field should be a string)
+        //        filteredResults = filteredResults
+        //            .Where(s =>
+        //            Utls.GetPropertyChainValue<string>(s, filterField).ToLower()
+        //            .Contains(filterValue.ToString().ToLower()));
+        //    }
+        //}
 
         // Parse sort parameter
         var sortParams = JsonConvert.DeserializeObject<string[]>(sort);
@@ -81,7 +91,7 @@ public static class Utls
         sortField = Utls.ToTitleCase(sortField);
 
         // sort records by sort field and order (value of sort field should be a string)
-        object? keySelector(DbSetRecordT r) => Utls.GetPropertyValue<object>(r, sortField);
+        object? keySelector(DbSetRecordT r) => Utls.GetPropertyChainValue<object>(r, sortField);
         IEnumerable<DbSetRecordT> sortedResults = sortOrder == "ASC" ?
             filteredResults.OrderBy(keySelector) :
             filteredResults.OrderByDescending(keySelector);
@@ -97,9 +107,43 @@ public static class Utls
         return resultsRange;
     }
 
+    /// <summary>
+    /// First sorts, then extracts a range of records from the sorted results.
+    /// The operations are required by react-admin
+    /// </summary>
+    //public static IEnumerable<DbSetRecordT> FilterSortAndRangeDbSet<DbSetRecordT>(InteractiveScheduleUadApiDbContext _context,
+    //    string range, string sort, string filter,
+    //    out int rangeStart, out int rangeEnd) where DbSetRecordT : class
+    //{
+    //    var filteredResults = _context.Set<DbSetRecordT>();
+
+    //    // Parse sort parameter
+    //    var sortParams = JsonConvert.DeserializeObject<string[]>(sort);
+    //    var (sortField, sortOrder) = (sortParams[0], sortParams[1]);
+
+    //    // TODO: make react-admin send fields in titlecase
+    //    sortField = Utls.ToTitleCase(sortField);
+
+    //    // sort records by sort field and order (value of sort field should be a string)
+    //    object? keySelector(DbSetRecordT r) => Utls.GetPropertyChainValue<object>(r, sortField);
+    //    IEnumerable<DbSetRecordT> sortedResults = sortOrder == "ASC" ?
+    //        filteredResults.OrderBy(keySelector) :
+    //        filteredResults.OrderByDescending(keySelector);
+
+    //    // Parse range parameter
+    //    var rangeParams = JsonConvert.DeserializeObject<int[]>(range);
+    //    (rangeStart, rangeEnd) = (rangeParams[0], rangeParams[1]);
+
+    //    // extract the range of records from the sorted results
+    //    var rangeLength = rangeEnd - rangeStart + 1;
+    //    var resultsRange = sortedResults.Skip(rangeStart).Take(rangeLength);
+
+    //    return resultsRange;
+    //}
+
     // React admin requires the total count of items to be returned in a custom header
     public static void AddContentRangeHeader(int rangeStart, int rangeEnd, int totalCount,
-        ControllerContext context, HttpResponse response)
+    ControllerContext context, HttpResponse response)
     {
         var resourceName = context.ActionDescriptor.ControllerName;
 
@@ -107,11 +151,30 @@ public static class Utls
         response.Headers.Add("Content-Range", totalCountHeader);
     }
 
-    // gets object property name and returns that property value
+    public static ReturnT GetPropertyChainValue<ReturnT>(object obj, string propertyChain)
+    {
+        var propertyNames = propertyChain.Split('.', StringSplitOptions.RemoveEmptyEntries);
+        var propertyValue = obj;
+
+        foreach (var propertyName in propertyNames)
+        {
+            var propertyNameTitlecased = Utls.ToTitleCase(propertyName);
+            propertyValue = Utls.GetPropertyValue<object>(propertyValue, propertyNameTitlecased);
+        }
+
+        return (ReturnT)propertyValue;
+    }
+
+    // gets access to object attribute by that attribute string name
     public static ReturnT? GetPropertyValue<ReturnT>(object obj, string propertyName)
     {
         ReturnT? value = (ReturnT)(obj.GetType().GetProperty(propertyName)?.GetValue(obj, null));
         return value;
+    }
+
+    public static bool IsPropertyChain(string text)
+    {
+        return text.Contains('.');
     }
 
     // converts a string to a titlecase

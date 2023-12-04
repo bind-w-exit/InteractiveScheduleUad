@@ -3,6 +3,7 @@ using InteractiveScheduleUad.Api.Extensions;
 using InteractiveScheduleUad.Api.Mappers;
 using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Models.Dtos;
+using InteractiveScheduleUad.Api.Models.Filters;
 using InteractiveScheduleUad.Api.Services.Contracts;
 using InteractiveScheduleUad.Api.Utilities;
 using Microsoft.AspNetCore.Authorization;
@@ -40,7 +41,7 @@ public class TeacherController : ControllerBase, IReactAdminCompatible<TeacherFo
         [FromQuery] string filter = "{}")
     {
         var resultsRange = Utls
-           .FilterSortAndRangeDbSet<Teacher>(
+           .FilterSortAndRangeDbSet<Teacher, TeacherForReadDtoFilter>(
             _context,
             range, sort, filter,
             out int rangeStart, out int rangeEnd);
