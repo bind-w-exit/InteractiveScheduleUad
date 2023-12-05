@@ -109,7 +109,7 @@ else
         connectionString = GetDbConnectionString(builder.Configuration);
     }
 
-    connectionString = "Host=localhost;Database=realSCDB;Username=postgres;Password=1;IncludeErrorDetail=true";
+    //connectionString = "Host=localhost;Database=realSCDB;Username=postgres;Password=1;IncludeErrorDetail=true";
     //var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
     // connect to npgsql db. Exit on failure
