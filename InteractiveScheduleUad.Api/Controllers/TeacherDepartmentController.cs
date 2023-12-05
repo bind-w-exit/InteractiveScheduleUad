@@ -1,7 +1,10 @@
-﻿using InteractiveScheduleUad.Api.Extensions;
+﻿using InteractiveScheduleUad.Api.Controllers.Contracts;
+using InteractiveScheduleUad.Api.Extensions;
 using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Models.Dtos;
+using InteractiveScheduleUad.Api.Models.Filters;
 using InteractiveScheduleUad.Api.Services.Contracts;
+using InteractiveScheduleUad.Api.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
@@ -10,13 +13,15 @@ namespace InteractiveScheduleUad.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class TeacherDepartmentController : ControllerBase
+public class TeacherDepartmentController : ControllerBase, IReactAdminCompatible<TeacherDepartmentForReadDto>
 {
     private readonly IDepartmentService _departmentService;
+    private readonly InteractiveScheduleUadApiDbContext _context;
 
-    public TeacherDepartmentController(IDepartmentService departmentService)
+    public TeacherDepartmentController(IDepartmentService departmentService, InteractiveScheduleUadApiDbContext context)
     {
         _departmentService = departmentService;
+        _context = context;
     }
 
     // GET: api/<DepartmentController>
@@ -24,18 +29,49 @@ public class TeacherDepartmentController : ControllerBase
     /// Retrieves all departments
     /// </summary>
     /// <response code="200">Success - Returns an array of departments</response>
+    //[HttpGet]
+    //[AllowAnonymous]
+    //[Produces("application/json")]
+    //[ProducesResponseType(typeof(IEnumerable<Department>), (int)HttpStatusCode.OK)]
+    //public async Task<ActionResult<IEnumerable<Department>>> Get()
+    //{
+    //    var result = await _departmentService.GetAllAsync();
+
+    //    if (result.IsFailed)
+    //        return result.Errors.First().ToObjectResult();
+    //    else
+    //        return Ok(result.Value);
+    //}
+
+    // GET: api/<DepartmentController>
+    /// <summary>
+    /// Retrieves a list of departments
+    /// </summary>
+    /// <response code="200">Success - Returns a list of departments</response>
     [HttpGet]
     [AllowAnonymous]
     [Produces("application/json")]
     [ProducesResponseType(typeof(IEnumerable<Department>), (int)HttpStatusCode.OK)]
-    public async Task<ActionResult<IEnumerable<Department>>> Get()
+    public async Task<ActionResult<IEnumerable<TeacherDepartmentForReadDto>>> GetList(
+        [FromQuery] string range = "[0, 999999]",
+        [FromQuery] string sort = "[\"Id\", \"ASC\"]",
+        [FromQuery] string filter = "{}")
     {
-        var result = await _departmentService.GetAllAsync();
+        var resultsRange = Utls
+            .FilterSortAndRangeDbSet<Department, TeacherDepartmentForReadDtoFilter>(
+            _context,
+            range, sort, filter,
+            out int rangeStart, out int rangeEnd);
 
-        if (result.IsFailed)
-            return result.Errors.First().ToObjectResult();
-        else
-            return Ok(result.Value);
+        var totalCount = _context.Departments.Count();
+        Utls.AddContentRangeHeader(
+            rangeStart, rangeEnd, totalCount,
+            ControllerContext, Response);
+
+        //var resultsForRead = resultsRange.Select(DepartmentMapper.DepartmentToTeacherDepartmentForReadDto);
+        var resultsForRead = resultsRange;
+
+        return Ok(resultsForRead);
     }
 
     // GET api/<DepartmentController>/5

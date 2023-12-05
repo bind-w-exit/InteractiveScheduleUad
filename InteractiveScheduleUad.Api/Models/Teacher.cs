@@ -3,7 +3,7 @@
 namespace InteractiveScheduleUad.Api.Models;
 
 [Index(nameof(FirstName), nameof(LastName), IsUnique = true)]
-public class Teacher
+public class Teacher : Entity
 {
     public int Id { get; set; }
 

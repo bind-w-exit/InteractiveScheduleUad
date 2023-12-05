@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 namespace InteractiveScheduleUad.Api.Models;
 
 [Index(nameof(LessonIndex), nameof(WeekDay), nameof(WeekIndex), IsUnique = true)]
-public class TimeContext
+public class TimeContext : Entity
 {
     public int Id { get; set; }
 

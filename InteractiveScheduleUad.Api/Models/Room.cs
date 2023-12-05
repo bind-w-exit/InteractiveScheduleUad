@@ -3,12 +3,9 @@
 namespace InteractiveScheduleUad.Api.Models;
 
 [Index(nameof(Name), IsUnique = true)]
-public class Room
+public class Room : Entity
 {
-    public int Id { get; set; }
-
     public string Name { get; set; }
-
 
     // foreign keys
 

@@ -28,7 +28,7 @@ public class LessonController : ControllerBase, IReactAdminCompatible<LessonForR
     /// <summary>
     /// Retrieves a list of lessons.
     /// </summary>
-    /// <response code="200">Success - Returns all lessons</response>
+    /// <response code="200">Success - Returns a list of lessons</response>
     [HttpGet]
     [AllowAnonymous]
     [ProducesResponseType(typeof(LessonForReadDto[]), (int)HttpStatusCode.OK)]

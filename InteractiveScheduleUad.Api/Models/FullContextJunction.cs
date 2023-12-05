@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 namespace InteractiveScheduleUad.Api.Models;
 
 [Index(nameof(StudentsGroupId), nameof(TimeContextId), IsUnique = true)]
-public class FullContextJunction
+public class FullContextJunction : Entity
 {
     public int Id { get; set; }
 

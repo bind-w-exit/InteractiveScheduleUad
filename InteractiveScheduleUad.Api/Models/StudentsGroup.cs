@@ -3,7 +3,7 @@ using System;
 
 namespace InteractiveScheduleUad.Api.Models;
 
-public class StudentsGroup
+public class StudentsGroup : Entity
 {
     public int Id { get; set; }
 

@@ -1,6 +1,7 @@
 ﻿using AutoFilterer.Extensions;
 using AutoFilterer.Types;
 using Azure;
+using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Models.Filters;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -47,16 +48,26 @@ public static class Utls
     /// </summary>
     public static IEnumerable<DbSetRecordT> FilterSortAndRangeDbSet<DbSetRecordT, FilterT>(InteractiveScheduleUadApiDbContext _context,
         string range, string sort, string filter,
-        out int rangeStart, out int rangeEnd) where DbSetRecordT : class where FilterT : FilterBase
+        out int rangeStart, out int rangeEnd) where DbSetRecordT : Entity where FilterT : FilterBase
     {
         Debug.WriteLine($"filter: {filter}", "FilterSortAndRangeDbSet");
 
-        // Parse filter parameter
-        var filterObject = JsonConvert.DeserializeObject<Dictionary<string, object>>(filter);
-
         var records = _context.Set<DbSetRecordT>();
-        var filterDto = JsonConvert.DeserializeObject<FilterT>(filter);
-        var filteredResults = _context.Set<DbSetRecordT>().ApplyFilter(filterDto);
+        IQueryable<DbSetRecordT> filteredResults;
+        // Parse filter parameter. It can be either a regular filter or a filter by id set
+        try
+        {
+            IdSetFilter filterObject = JsonConvert.DeserializeObject<IdSetFilter>(filter);
+            var ids = filterObject.Id ?? throw new JsonSerializationException();
+            filteredResults = records.Where(r => ids.Contains(r.Id));
+        }
+        catch (JsonSerializationException)
+        {
+            // filter is not an id set filter
+            var filterDto = JsonConvert.DeserializeObject<FilterT>(filter);
+            filteredResults = _context.Set<DbSetRecordT>().ApplyFilter(filterDto);
+        }
+        var filteredEnumerableResults = filteredResults.AsEnumerable();
 
         //if (filterObject.Count != 0 && false) // TODO: re-enable filtering
         //{
@@ -93,8 +104,8 @@ public static class Utls
         // sort records by sort field and order (value of sort field should be a string)
         object? keySelector(DbSetRecordT r) => Utls.GetPropertyChainValue<object>(r, sortField);
         IEnumerable<DbSetRecordT> sortedResults = sortOrder == "ASC" ?
-            filteredResults.OrderBy(keySelector) :
-            filteredResults.OrderByDescending(keySelector);
+            filteredEnumerableResults.OrderBy(keySelector) :
+            filteredEnumerableResults.OrderByDescending(keySelector);
 
         // Parse range parameter
         var rangeParams = JsonConvert.DeserializeObject<int[]>(range);

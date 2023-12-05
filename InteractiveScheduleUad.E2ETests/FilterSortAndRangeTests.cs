@@ -1,5 +1,6 @@
 ﻿using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Models.Dtos;
+using InteractiveScheduleUad.Api.Models.Filters;
 using InteractiveScheduleUad.E2ETests.Extensions;
 using InteractiveScheduleUad.E2ETests.Models;
 using InteractiveScheduleUad.E2ETests.Utils;
@@ -80,22 +81,19 @@ public class FilterSortAndRangeTests : IAsyncLifetime
     public void GettingFilteredListOfSubjects_CompletesAsExpected()
     {
         // pre-create subject with name "Web"
-        var subject = "Web";
-        var subjectEncased = Utls.EncaseInQuotes(subject);
-        client.EnsureExists
-            <Subject, string>
-            (subjectsEndpoint, null, subjectEncased, (s) => s.Name == subject);
+        var subjectName = "Web";
+        var createdWebSubject = CreateSubject(subjectName);
 
         var request = new RestRequest(subjectsEndpoint);
         request.AddQueryParameter("range", "[0, 9]");
         request.AddQueryParameter("sort", "[\"Id\", \"ASC\"]");
-        request.AddQueryParameter("filter", $"{{Name: {subjectEncased}}}");
+        request.AddQueryParameter("filter", $"{{Name: {Utls.EncaseInQuotes(subjectName)}}}");
 
         var response = client.Get<List<Subject>>(request);
 
         Assert.True(response.Count > 0);
         // verify that results are filtered
-        Assert.All(response, (s) => Assert.Equal(subject, s.Name));
+        Assert.All(response, (s) => Assert.Equal(subjectName, s.Name));
     }
 
     // filters by related entity property
@@ -127,6 +125,42 @@ public class FilterSortAndRangeTests : IAsyncLifetime
         Assert.True(response.Count > 0);
         // verify that results are filtered
         Assert.All(response, (l) => Assert.Equal(lesson.Subject.Name, l.Subject.Name));
+    }
+
+    [Fact]
+    public void GettingSeveralSubjects_CompletesAsExpected()
+    {
+        var firstSubjectName = "Web";
+        var secondSubjectName = "Math";
+        var createdWebSubject = CreateSubject(firstSubjectName);
+        var createdMathSubject = CreateSubject(secondSubjectName);
+        var createdWebSubjectId = createdWebSubject.Id;
+        var createdMathSubjectId = createdMathSubject.Id;
+
+        var ids = new int[] { createdWebSubjectId, createdMathSubjectId };
+
+        var request = new RestRequest(subjectsEndpoint);
+        var idFilter = new IdSetFilter()
+        {
+            Id = ids
+        };
+        var idFilterJson = Newtonsoft.Json.JsonConvert.SerializeObject(idFilter);
+        request.AddQueryParameter("range", "[0, 9]");
+        request.AddQueryParameter("sort", "[\"Id\", \"ASC\"]");
+        request.AddQueryParameter("filter", idFilterJson);
+
+        var response = client.Get<List<Subject>>(request);
+
+        Assert.True(response.Count == 2);
+    }
+
+    private Subject CreateSubject(string subjectName)
+    {
+        //subjectEncased = Utls.EncaseInQuotes(subjectName);
+        var subjectForWrite = new Subject { Name = subjectName };
+        return client.EnsureExists
+            <Subject, Subject>
+            (subjectsEndpoint, null, subjectForWrite, (s) => s.Name == subjectName);
     }
 
     // note: copypasted from ScheduleTests

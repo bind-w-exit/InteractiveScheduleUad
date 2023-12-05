@@ -5,7 +5,7 @@ namespace InteractiveScheduleUad.Api.Models;
 
 // aka contextualized lesson.Different from just lesson
 [Index(nameof(FullContextId), IsUnique = true)]
-public class ScheduleLessonJunction
+public class ScheduleLessonJunction : Entity
 {
     public int Id { get; set; }
 

@@ -5,10 +5,8 @@ using System.Runtime.InteropServices;
 namespace InteractiveScheduleUad.Api.Models;
 
 [Index(nameof(ClassType), nameof(SubjectId), nameof(TeacherId), nameof(RoomId), IsUnique = true)]
-public class Lesson
+public class Lesson : Entity
 {
-    public int Id { get; set; }
-
     public ClassType? ClassType { get; set; }
 
     // foreign keys
