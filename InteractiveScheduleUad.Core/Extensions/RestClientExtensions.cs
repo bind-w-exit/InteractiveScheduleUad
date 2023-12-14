@@ -1,17 +1,8 @@
-﻿using FluentResults;
-using InteractiveScheduleUad.Api.Errors;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using RestSharp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using RestSharp;
 
-namespace InteractiveScheduleUad.E2ETests.Extensions;
+namespace InteractiveScheduleUad.Core.Extensions;
 
-internal static class RestClientExtensions
+public static class RestClientExtensions
 {
     // checks whether resource exists and returns it. If the resource doesn't exist, creates and returns it.
     // relies on POST endpoint returning the newly-created object

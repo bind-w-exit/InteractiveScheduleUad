@@ -8,7 +8,7 @@ namespace InteractiveScheduleUad.E2ETests.Models;
 
 // classes for deserialization of schedule file
 
-internal class ScheduleClass
+public class ScheduleClass
 {
     public int index { get; set; }
     public string name { get; set; }
@@ -20,12 +20,12 @@ internal class ScheduleClass
     public int? week { get; set; }
 }
 
-internal class Day
+public class Day
 {
     public List<ScheduleClass> classes { get; set; }
 }
 
-internal class ScheduleFile
+public class ScheduleFile
 {
     public Day monday { get; set; }
     public Day tuesday { get; set; }

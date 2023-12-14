@@ -1,26 +1,21 @@
 ﻿using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Models.Dtos;
 using InteractiveScheduleUad.Core.Utils;
-using InteractiveScheduleUad.E2ETests.Extensions;
+using InteractiveScheduleUad.Core.Extensions;
 using InteractiveScheduleUad.E2ETests.Models;
 using Newtonsoft.Json;
 using RestSharp;
 using RestSharp.Authenticators;
 using System.Net;
 using Xunit.Sdk;
+using InteractiveScheduleUad.E2ETests.Constants;
+using InteractiveScheduleUad.E2ETests.UserActions;
 
 namespace InteractiveScheduleUad.E2ETests;
 
 public class ScheduleTests : IAsyncLifetime
 {
     private RestClient client = null;
-
-    private string teachersEndpoint = nameof(Teacher);
-    private string lessonsEndpoint = nameof(Lesson);
-    private string scheduleLessonsEndpoint = "ScheduleLesson";
-    private string groupsEndpoint = nameof(StudentsGroup);
-    private string subjectsEndpoint = nameof(Subject);
-    private string roomsEndpoint = nameof(Room);
 
     private static async Task<RestClient> GetAuthenticatedClient()
     {
@@ -43,19 +38,19 @@ public class ScheduleTests : IAsyncLifetime
         client = _client;
 
         // delete all schedule lessons
-        var scheduleLessonsRequest = new RestRequest(scheduleLessonsEndpoint);
+        var scheduleLessonsRequest = new RestRequest(ApiEndpoints.scheduleLessonsEndpoint);
         await client.DeleteAsync(scheduleLessonsRequest);
 
         // delete all groups
-        var request = new RestRequest(groupsEndpoint);
+        var request = new RestRequest(ApiEndpoints.groupsEndpoint);
         await client.DeleteAsync(request);
 
         // delete all lessons
-        var lessonsRequest = new RestRequest(lessonsEndpoint);
+        var lessonsRequest = new RestRequest(ApiEndpoints.lessonsEndpoint);
         await client.DeleteAsync(lessonsRequest);
 
         // delete all teachers
-        var teachersRequest = new RestRequest(teachersEndpoint);
+        var teachersRequest = new RestRequest(ApiEndpoints.teachersEndpoint);
         await client.DeleteAsync(teachersRequest);
     }
 
@@ -75,9 +70,9 @@ public class ScheduleTests : IAsyncLifetime
 
         // Act
         var response = client.PostJson<StudentsGroupForWriteDto, StudentsGroupForReadDto>
-            (groupsEndpoint, groupForWrite);
+            (ApiEndpoints.groupsEndpoint, groupForWrite);
 
-        string getEndpoint = $"{groupsEndpoint}/{response.Id}";
+        string getEndpoint = $"{ApiEndpoints.groupsEndpoint}/{response.Id}";
         var getResponse = client.GetJson<StudentsGroupForReadDto>(getEndpoint);
 
         // Assert
@@ -95,7 +90,7 @@ public class ScheduleTests : IAsyncLifetime
 
         LessonForReadDto responseData = CreateCompleteLesson(rawScheduleClass);
 
-        var sameLessonViaGet = client.GetJson<LessonForReadDto>($"{lessonsEndpoint}/{responseData.Id}");
+        var sameLessonViaGet = client.GetJson<LessonForReadDto>($"{ApiEndpoints.lessonsEndpoint}/{responseData.Id}");
 
         Assert.Equivalent(responseData, sameLessonViaGet);
         Assert.Equal(rawScheduleClass.teacher, sameLessonViaGet.Teacher.LastName);
@@ -113,7 +108,7 @@ public class ScheduleTests : IAsyncLifetime
         ScheduleClass rawScheduleClass = rawScheduleMonday.classes.First();
 
         var responseData = CreateCompleteScheduleLesson(rawScheduleClass, "ІСТ-5", DayOfWeek.Monday);
-        var sameLessonViaGet = client.GetJson<ScheduleLessonForReadDto>($"{scheduleLessonsEndpoint}/{responseData.Id}");
+        var sameLessonViaGet = client.GetJson<ScheduleLessonForReadDto>($"{ApiEndpoints.scheduleLessonsEndpoint}/{responseData.Id}");
 
         Assert.Equivalent(responseData, sameLessonViaGet);
     }
@@ -142,7 +137,7 @@ public class ScheduleTests : IAsyncLifetime
             SubjectId = lessonOne.Subject.Id,
         };
 
-        var lessonEndpoint = $"{lessonsEndpoint}/{lessonOne.Id}";
+        var lessonEndpoint = $"{ApiEndpoints.lessonsEndpoint}/{lessonOne.Id}";
 
         var response = client.PutJson(lessonEndpoint, lessonForUpdate);
         var modifiedLesson = client.GetJson<LessonForReadDto>(lessonEndpoint);
@@ -194,7 +189,7 @@ public class ScheduleTests : IAsyncLifetime
             LessonId = scheduleLessonTwo.Lesson.Id
         };
 
-        var lessonEndpoint = $"{scheduleLessonsEndpoint}/{scheduleLessonOne.Id}";
+        var lessonEndpoint = $"{ApiEndpoints.scheduleLessonsEndpoint}/{scheduleLessonOne.Id}";
 
         var response = client.PutJson(lessonEndpoint, updatedScheduleLessonOne);
         var modifiedScheduleLessonOne = client.GetJson<ScheduleLessonForReadDto>(lessonEndpoint);
@@ -245,7 +240,7 @@ public class ScheduleTests : IAsyncLifetime
             }
         }
 
-        var allLessons = client.GetJson<List<ScheduleLessonForReadDto>>(scheduleLessonsEndpoint);
+        var allLessons = client.GetJson<List<ScheduleLessonForReadDto>>(ApiEndpoints.scheduleLessonsEndpoint);
         var mondayLessons = allLessons.Where(l => l.FullContext.TimeContext.WeekDay == DayOfWeek.Monday);
 
         Assert.Equal(rawScheduleMondayClasses.Count, mondayLessons.Count());
@@ -267,13 +262,13 @@ public class ScheduleTests : IAsyncLifetime
         var differentGroupLesson = CreateCompleteScheduleLesson(anotherRawScheduleClass, "ІСТ-6", DayOfWeek.Tuesday);
 
         // Act
-        var groupDeleteRequest = new RestRequest($"{groupsEndpoint}/{scheduleLesson.FullContext.StudentsGroup.Id}");
+        var groupDeleteRequest = new RestRequest($"{ApiEndpoints.groupsEndpoint}/{scheduleLesson.FullContext.StudentsGroup.Id}");
         var groupDeleteResponse = client.Delete(groupDeleteRequest);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, groupDeleteResponse.StatusCode);
 
-        var allLessons = client.GetJson<List<ScheduleLessonForReadDto>>(scheduleLessonsEndpoint);
+        var allLessons = client.GetJson<List<ScheduleLessonForReadDto>>(ApiEndpoints.scheduleLessonsEndpoint);
         Assert.DoesNotContain(allLessons, l => l.Id == scheduleLesson.Id);
         Assert.Contains(allLessons, l => l.Id == differentGroupLesson.Id);
     }
@@ -291,7 +286,7 @@ public class ScheduleTests : IAsyncLifetime
         var differentLesson = CreateCompleteScheduleLesson(anotherRawScheduleClass, "ІСТ-5", DayOfWeek.Monday);
 
         // Act
-        var lessonDeleteRequest = new RestRequest($"{lessonsEndpoint}/{scheduleLesson.Lesson.Id}");
+        var lessonDeleteRequest = new RestRequest($"{ApiEndpoints.lessonsEndpoint}/{scheduleLesson.Lesson.Id}");
         var lessonDeleteResponse = client.Delete(lessonDeleteRequest);
 
         // Assert
@@ -304,7 +299,7 @@ public class ScheduleTests : IAsyncLifetime
 
         Assert.Equal(HttpStatusCode.OK, lessonDeleteResponse.StatusCode);
 
-        var allScheduleLessons = client.GetJson<List<ScheduleLessonForReadDto>>(scheduleLessonsEndpoint);
+        var allScheduleLessons = client.GetJson<List<ScheduleLessonForReadDto>>(ApiEndpoints.scheduleLessonsEndpoint);
         Assert.DoesNotContain(allScheduleLessons, l => l.Id == scheduleLesson.Id);
         Assert.Contains(allScheduleLessons, l => l.Id == differentLesson.Id);
     }
@@ -320,13 +315,13 @@ public class ScheduleTests : IAsyncLifetime
         var scheduleLesson = CreateCompleteScheduleLesson(rawScheduleClass, "ІСТ-5", DayOfWeek.Monday);
 
         // Act
-        var teacherDeleteRequest = new RestRequest($"{teachersEndpoint}/{scheduleLesson.Lesson.Teacher.Id}");
+        var teacherDeleteRequest = new RestRequest($"{ApiEndpoints.teachersEndpoint}/{scheduleLesson.Lesson.Teacher.Id}");
         var teacherDeleteResponse = client.Delete(teacherDeleteRequest);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, teacherDeleteResponse.StatusCode);
 
-        var allLessons = client.GetJson<List<ScheduleLessonForReadDto>>(scheduleLessonsEndpoint);
+        var allLessons = client.GetJson<List<ScheduleLessonForReadDto>>(ApiEndpoints.scheduleLessonsEndpoint);
         Assert.Contains(allLessons, l => l.Lesson.Id == scheduleLesson.Lesson.Id);
     }
 
@@ -341,96 +336,29 @@ public class ScheduleTests : IAsyncLifetime
         var scheduleLesson = CreateCompleteScheduleLesson(rawScheduleClass, "ІСТ-5", DayOfWeek.Monday);
 
         // Act
-        var roomDeleteRequest = new RestRequest($"{roomsEndpoint}/{scheduleLesson.Lesson.Room.Id}");
+        var roomDeleteRequest = new RestRequest($"{ApiEndpoints.roomsEndpoint}/{scheduleLesson.Lesson.Room.Id}");
         var roomDeleteResponse = client.Delete(roomDeleteRequest);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, roomDeleteResponse.StatusCode);
 
-        var allLessons = client.GetJson<List<ScheduleLessonForReadDto>>(scheduleLessonsEndpoint);
+        var allLessons = client.GetJson<List<ScheduleLessonForReadDto>>(ApiEndpoints.scheduleLessonsEndpoint);
         Assert.Contains(allLessons, l => l.Lesson.Id == scheduleLesson.Lesson.Id);
     }
 
-    // - - test helpers and scenario implementations - -
-    // TODO: move to UserActions
+    // - - test helpers - -
 
     // POSTS a complete lesson with related entities pre-created in advance
     private LessonForReadDto CreateCompleteLesson(ScheduleClass rawScheduleClass)
     {
-        LessonForWriteDto requestBody;
-        LessonForReadDto responseData;
-
-        // pre-create necessary related entities (if they don't exist already)
-        TeacherForWriteDto teacherForWrite = new() { LastName = rawScheduleClass.teacher, FirstName = "" };
-        var teacher = client.EnsureExists<TeacherForReadDto, TeacherForWriteDto>(
-            teachersEndpoint, null, teacherForWrite, (t) => t.LastName == rawScheduleClass.teacher);
-        var teacherId = teacher.Id;
-
-        var subject = client.EnsureExists<Subject, string>(
-            subjectsEndpoint, null, Utls.EncaseInQuotes(rawScheduleClass.name), (s) => s.Name == rawScheduleClass.name);
-        var subjectId = subject.Id;
-
-        var roomForWrite = new RoomForWriteDto { Name = rawScheduleClass.room };
-        var room = client.EnsureExists<Room, RoomForWriteDto>(
-            roomsEndpoint, null, roomForWrite, (r) => r.Name == rawScheduleClass.room);
-        var roomId = room.Id;
-
-        // assemble final request
-        requestBody = new()
-        {
-            RoomId = roomId,
-            SubjectId = subjectId,
-            TeacherId = teacherId
-        };
-
-        // POST the lesson with entities
-        responseData = client.PostJson<LessonForWriteDto, LessonForReadDto>(lessonsEndpoint, requestBody);
-
-        return responseData;
+        return ScheduleActions.CreateCompleteLesson(rawScheduleClass, client);
     }
 
     // POSTS a complete schedule lesson with related entities pre-created in advance
     private ScheduleLessonForReadDto CreateCompleteScheduleLesson(
         ScheduleClass rawScheduleClass, string groupName, DayOfWeek weekDay)
     {
-        // construct fields of full context
-        TimeContextForWriteDto timeContext = new()
-        {
-            LessonIndex = rawScheduleClass.index,
-            WeekDay = weekDay,
-            WeekIndex = rawScheduleClass.week ?? 0,
-        };
-
-        var groupForWrite = new StudentsGroupForWriteDto { Name = groupName };
-        var group = client.EnsureExists<StudentsGroup, StudentsGroupForWriteDto>(
-            groupsEndpoint, null, groupForWrite, (g) => g.Name == groupName);
-        var groupId = group.Id;
-
-        FullContextForWriteDto fullContext = new()
-        {
-            StudentsGroupId = groupId,
-            TimeContext = timeContext
-        };
-
-        // create a base lesson and obtain its Id
-
-        var newLesson = CreateCompleteLesson(rawScheduleClass);
-        var newLessonId = newLesson.Id;
-
-        // construct final schedule lesson
-
-        var scheduleLessonForWrite = new ScheduleLessonForWriteDto
-        {
-            FullContext = fullContext,
-            LessonId = newLessonId
-        };
-
-        // POST the schedule lesson
-        var responseData = client.PostJson
-            <ScheduleLessonForWriteDto, ScheduleLessonForReadDto>
-            (scheduleLessonsEndpoint, scheduleLessonForWrite);
-
-        return responseData;
+        return ScheduleActions.CreateCompleteScheduleLesson(rawScheduleClass, groupName, weekDay, client);
     }
 
     private static ScheduleFile ReadRawScheduleFromFile()

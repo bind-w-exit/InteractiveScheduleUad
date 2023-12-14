@@ -1,20 +1,18 @@
 ﻿using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Models.Dtos;
-using InteractiveScheduleUad.E2ETests.Extensions;
+using InteractiveScheduleUad.Core.Extensions;
 using InteractiveScheduleUad.E2ETests.Models;
 using InteractiveScheduleUad.Core.Utils;
 using Newtonsoft.Json;
 using RestSharp;
 using RestSharp.Authenticators;
+using InteractiveScheduleUad.E2ETests.Constants;
 
 namespace InteractiveScheduleUad.E2ETests;
 
 public class TeacherTests : IAsyncLifetime
 {
     private RestClient client = null;
-
-    private string teacherEndpoint = "Teacher";
-    private string teacherDepartmentEndpoint = "TeacherDepartment";
 
     public TeacherTests()
     {
@@ -44,12 +42,12 @@ public class TeacherTests : IAsyncLifetime
 
         // delete all teachers
 
-        var request = new RestRequest(teacherEndpoint);
+        var request = new RestRequest(ApiEndpoints.teachersEndpoint);
         var response = await client.DeleteAsync(request);
 
         // delete all teacher departments
 
-        request = new RestRequest(teacherDepartmentEndpoint);
+        request = new RestRequest(ApiEndpoints.teacherDepartmentEndpoint);
         response = await client.DeleteAsync(request);
     }
 
@@ -70,7 +68,7 @@ public class TeacherTests : IAsyncLifetime
 
         // Act
         var response = CreateTeacher(rawTeacher);
-        var getResponse = client.GetJson<TeacherForReadDto>($"{teacherEndpoint}/{response.Id}");
+        var getResponse = client.GetJson<TeacherForReadDto>($"{ApiEndpoints.teachersEndpoint}/{response.Id}");
 
         // Assert
         Assert.Equivalent(getResponse, response);
@@ -92,7 +90,7 @@ public class TeacherTests : IAsyncLifetime
         }
 
         // Assert
-        var response = client.GetJson<List<TeacherForReadDto>>(teacherEndpoint);
+        var response = client.GetJson<List<TeacherForReadDto>>(ApiEndpoints.teachersEndpoint);
         Assert.Equal(rawTeachersObj.Count, response.Count);
     }
 
@@ -108,39 +106,7 @@ public class TeacherTests : IAsyncLifetime
 
     private Teacher CreateTeacher(RawTeacher rawTeacher)
     {
-        // Full name = Прізвище Ім'я По батькові
-        var nameBits = rawTeacher.FullName.Split(' ');
-        var lastName = nameBits.First();
-        var firstName = nameBits[1];
-        var middleName = nameBits.Length == 3 ? nameBits[2] : null; // aka patronymic
-
-        var email = rawTeacher.Email;
-
-        // ensure that department exists
-
-        TeacherDepartmentForWriteDto newDepartment = new()
-        {
-            Name = rawTeacher.DepartmentFullName,
-            Abbreviation = rawTeacher.DepartmentAbbreviation,
-            Link = rawTeacher.DepartmentLink
-        };
-        var department = client.EnsureExists<Department, TeacherDepartmentForWriteDto>
-            (teacherDepartmentEndpoint, null, newDepartment, (d) => d.Name == newDepartment.Name);
-        var departmentId = department.Id;
-
-        // construct teacher object
-
-        var teacher = new TeacherForWriteDto()
-        {
-            FirstName = firstName,
-            LastName = lastName,
-            MiddleName = middleName,
-            Email = email,
-            Qualifications = rawTeacher.Qualification,
-            DepartmentId = departmentId
-        };
-
-        return client.PostJson<TeacherForWriteDto, Teacher>(teacherEndpoint, teacher);
+        return UserActions.TeacherActions.CreateTeacher(rawTeacher, client);
     }
 
     private static TeachersFile ReadRawTeachersFromFile()

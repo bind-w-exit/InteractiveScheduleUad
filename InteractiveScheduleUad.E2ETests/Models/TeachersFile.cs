@@ -13,7 +13,7 @@ internal class TeachersFile : List<RawTeacher>
 {
 }
 
-internal class RawTeacher
+public class RawTeacher
 {
     [JsonProperty("№")]
     public int? Number { get; set; }
