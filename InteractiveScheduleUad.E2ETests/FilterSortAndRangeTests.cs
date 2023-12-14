@@ -3,7 +3,7 @@ using InteractiveScheduleUad.Api.Models.Dtos;
 using InteractiveScheduleUad.Api.Models.Filters;
 using InteractiveScheduleUad.E2ETests.Extensions;
 using InteractiveScheduleUad.E2ETests.Models;
-using InteractiveScheduleUad.E2ETests.Utils;
+using InteractiveScheduleUad.Core.Utils;
 using RestSharp;
 using RestSharp.Authenticators;
 using System;

@@ -25,6 +25,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\InteractiveScheduleUad.Api\InteractiveScheduleUad.Api.csproj" />
+		<ProjectReference Include="..\InteractiveScheduleUad.Core\InteractiveScheduleUad.Core.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

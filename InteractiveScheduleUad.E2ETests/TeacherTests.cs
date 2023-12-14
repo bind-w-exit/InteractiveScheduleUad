@@ -2,7 +2,7 @@
 using InteractiveScheduleUad.Api.Models.Dtos;
 using InteractiveScheduleUad.E2ETests.Extensions;
 using InteractiveScheduleUad.E2ETests.Models;
-using InteractiveScheduleUad.E2ETests.Utils;
+using InteractiveScheduleUad.Core.Utils;
 using Newtonsoft.Json;
 using RestSharp;
 using RestSharp.Authenticators;

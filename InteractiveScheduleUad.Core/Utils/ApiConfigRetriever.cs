@@ -2,11 +2,11 @@
 using RestSharp;
 using InteractiveScheduleUad.Api.Models;
 
-namespace InteractiveScheduleUad.E2ETests.Utils;
+namespace InteractiveScheduleUad.Core.Utils;
 
 public record Config(string BasePath, string AccessToken);
 
-internal class ApiConfigRetriever
+public class ApiConfigRetriever
 {
     public static async Task<Config> GetBasePathAndAccessToken()
     {

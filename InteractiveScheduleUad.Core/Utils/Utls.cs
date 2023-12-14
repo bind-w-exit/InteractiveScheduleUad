@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace InteractiveScheduleUad.E2ETests.Utils;
+namespace InteractiveScheduleUad.Core.Utils;
 
-internal class Utls
+public class Utls
 {
     public static string EncaseInQuotes(string text)
     {

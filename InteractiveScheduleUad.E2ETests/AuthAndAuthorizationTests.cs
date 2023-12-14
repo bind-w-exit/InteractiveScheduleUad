@@ -1,16 +1,9 @@
-﻿using Azure.Core;
-using InteractiveScheduleUad.Api.Controllers;
+﻿using InteractiveScheduleUad.Api.Controllers;
 using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Models.Dtos;
-using InteractiveScheduleUad.E2ETests.Utils;
-using Npgsql.Internal.TypeHandlers;
+using InteractiveScheduleUad.Core.Utils;
 using RestSharp;
 using RestSharp.Authenticators;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace InteractiveScheduleUad.E2ETests;
 

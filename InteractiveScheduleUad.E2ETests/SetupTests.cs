@@ -1,4 +1,4 @@
-using InteractiveScheduleUad.E2ETests.Utils;
+using InteractiveScheduleUad.Core.Utils;
 
 namespace InteractiveScheduleUad.E2ETests;
 

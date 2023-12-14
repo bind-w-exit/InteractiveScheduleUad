@@ -1,19 +1,12 @@
 ﻿using InteractiveScheduleUad.Api.Models;
 using InteractiveScheduleUad.Api.Models.Dtos;
+using InteractiveScheduleUad.Core.Utils;
 using InteractiveScheduleUad.E2ETests.Extensions;
 using InteractiveScheduleUad.E2ETests.Models;
-using InteractiveScheduleUad.E2ETests.Utils;
-using Microsoft.VisualBasic;
 using Newtonsoft.Json;
 using RestSharp;
 using RestSharp.Authenticators;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Xunit.Sdk;
 
 namespace InteractiveScheduleUad.E2ETests;
@@ -359,6 +352,7 @@ public class ScheduleTests : IAsyncLifetime
     }
 
     // - - test helpers and scenario implementations - -
+    // TODO: move to UserActions
 
     // POSTS a complete lesson with related entities pre-created in advance
     private LessonForReadDto CreateCompleteLesson(ScheduleClass rawScheduleClass)
