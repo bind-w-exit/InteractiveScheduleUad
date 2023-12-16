@@ -48,7 +48,7 @@ public class InteractiveScheduleUadApiDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // configure on-delete behavior of Teacher and Room
+        // configure not cascade deleting Teacher and Room when Lesson is deleted
 
         modelBuilder.Entity<Lesson>()
             .HasOne(nameof(Teacher))
@@ -59,6 +59,13 @@ public class InteractiveScheduleUadApiDbContext : DbContext
             .HasOne(nameof(Room))
             .WithMany(nameof(Lesson))
             .OnDelete(DeleteBehavior.SetNull);
+
+        // create unique index for lesson and make nulls not distinct (in postgresql, nulls are distinct by default)
+
+        modelBuilder.Entity<Lesson>()
+            .HasIndex(l => new { l.ClassType, l.SubjectId, l.TeacherId, l.RoomId })
+            .IsUnique()
+            .AreNullsDistinct(false);
 
         base.OnModelCreating(modelBuilder);
     }

@@ -83,7 +83,7 @@ public class ScheduleTests : IAsyncLifetime
     [Fact]
     public void CreatingLesson_CompletesAsExpected()
     {
-        var rawScheduleObj = ReadRawScheduleFromFile();
+        var rawScheduleObj = ReadRawExampleScheduleFromFile();
 
         Day rawScheduleMonday = rawScheduleObj.monday;
         ScheduleClass rawScheduleClass = rawScheduleMonday.classes.First();
@@ -102,7 +102,7 @@ public class ScheduleTests : IAsyncLifetime
     {
         // schedule lesson is just like a regular lesson, but with context
 
-        var rawScheduleObj = ReadRawScheduleFromFile();
+        var rawScheduleObj = ReadRawExampleScheduleFromFile();
 
         Day rawScheduleMonday = rawScheduleObj.monday;
         ScheduleClass rawScheduleClass = rawScheduleMonday.classes.First();
@@ -119,7 +119,8 @@ public class ScheduleTests : IAsyncLifetime
         // modify first lesson to reference the same room as the second lesson
 
         // Arrange
-        var rawScheduleObj = ReadRawScheduleFromFile();
+
+        var rawScheduleObj = ReadRawExampleScheduleFromFile();
         var rawScheduleMonday = rawScheduleObj.monday;
 
         var rawScheduleClass = rawScheduleMonday.classes.First();
@@ -153,7 +154,7 @@ public class ScheduleTests : IAsyncLifetime
         // create two schedule lessons and modifies base lesson of the first one to reference the second one
 
         // Arrange
-        var rawScheduleObj = ReadRawScheduleFromFile();
+        var rawScheduleObj = ReadRawExampleScheduleFromFile();
         var rawScheduleMonday = rawScheduleObj.monday;
         var rawScheduleClass = rawScheduleMonday.classes.First();
         var anotherRawScheduleClass = rawScheduleMonday.classes.Last();
@@ -210,38 +211,25 @@ public class ScheduleTests : IAsyncLifetime
         // 2.2 create base lessons
         // 2.3 create schedule lessons that map base schedules to full contexts: groups and time contexts
 
+        // Arrange
+
         // read "raw" schedule from file
-        var rawScheduleObj = ReadRawScheduleFromFile();
+        var rawScheduleObj = ReadRawExampleScheduleFromFile();
+        var groupName = "ІСТ-5";
 
         Day rawScheduleMonday = rawScheduleObj.monday;
         var rawScheduleMondayClasses = rawScheduleMonday.classes;
 
-        // POST new group
-        var groupForWrite = new StudentsGroupForWriteDto { Name = "ІСТ-5" };
-        var studentsGroup = client.PostJson<StudentsGroupForWriteDto, StudentsGroupForReadDto>(
-            "StudentsGroup", groupForWrite
-            );
-        var studentsGroupId = studentsGroup.Id;
+        // Act
 
-        // iterate over raw data and create schedule lessons
+        ScheduleActions.CreateAllScheduleLessonsOfSchedule(client, groupName, rawScheduleObj);
 
-        var scheduleFileProperties = typeof(ScheduleFile).GetProperties();
-        foreach (var day in scheduleFileProperties)
-        {
-            string dayName = day.Name;
-            var daySchedule = (Day)day.GetValue(rawScheduleObj);
+        // Assert
 
-            var dayNameCapitalized = string.Concat(dayName.First().ToString().ToUpper(), dayName.AsSpan(1));
-            DayOfWeek dayOfWeek = Enum.Parse<DayOfWeek>(dayNameCapitalized);
-
-            foreach (var rawClass in daySchedule.classes)
-            {
-                var scheduleLesson = CreateCompleteScheduleLesson(rawClass, "ІСТ-5", dayOfWeek);
-            }
-        }
+        // note: only monday classes are used in Assert part.
 
         var allLessons = client.GetJson<List<ScheduleLessonForReadDto>>(ApiEndpoints.scheduleLessonsEndpoint);
-        var mondayLessons = allLessons.Where(l => l.FullContext.TimeContext.WeekDay == DayOfWeek.Monday);
+        var mondayLessons = allLessons.Where(lsn => lsn.FullContext.TimeContext.WeekDay == DayOfWeek.Monday);
 
         Assert.Equal(rawScheduleMondayClasses.Count, mondayLessons.Count());
         Assert.Equal(rawScheduleObj.GetAllClassesCount(), allLessons.Count);
@@ -253,7 +241,7 @@ public class ScheduleTests : IAsyncLifetime
     public void DeletingStudentGroup_CascadeDeletesAllDependentScheduleLessons()
     {
         // Arrange
-        var rawScheduleObj = ReadRawScheduleFromFile();
+        var rawScheduleObj = ReadRawExampleScheduleFromFile();
         var rawScheduleMonday = rawScheduleObj.monday;
         var rawScheduleClass = rawScheduleMonday.classes.First();
         var anotherRawScheduleClass = rawScheduleMonday.classes.Last();
@@ -277,7 +265,7 @@ public class ScheduleTests : IAsyncLifetime
     public void DeletingLesson_CascadeDeletesAllDependentScheduleLessons()
     {
         // Arrange
-        var rawScheduleObj = ReadRawScheduleFromFile();
+        var rawScheduleObj = ReadRawExampleScheduleFromFile();
         var rawScheduleMonday = rawScheduleObj.monday;
         var rawScheduleClass = rawScheduleMonday.classes.First();
         var anotherRawScheduleClass = rawScheduleMonday.classes.Last();
@@ -308,7 +296,7 @@ public class ScheduleTests : IAsyncLifetime
     public void DeletingTeacher_DoesNotDeleteDependentLessons()
     {
         // Arrange
-        var rawScheduleObj = ReadRawScheduleFromFile();
+        var rawScheduleObj = ReadRawExampleScheduleFromFile();
         var rawScheduleMonday = rawScheduleObj.monday;
         var rawScheduleClass = rawScheduleMonday.classes.First();
 
@@ -329,7 +317,7 @@ public class ScheduleTests : IAsyncLifetime
     public void DeletingRoom_DoesNotDeleteDependentLessons()
     {
         // Arrange
-        var rawScheduleObj = ReadRawScheduleFromFile();
+        var rawScheduleObj = ReadRawExampleScheduleFromFile();
         var rawScheduleMonday = rawScheduleObj.monday;
         var rawScheduleClass = rawScheduleMonday.classes.First();
 
@@ -361,12 +349,8 @@ public class ScheduleTests : IAsyncLifetime
         return ScheduleActions.CreateCompleteScheduleLesson(rawScheduleClass, groupName, weekDay, client);
     }
 
-    private static ScheduleFile ReadRawScheduleFromFile()
+    private static ScheduleFile ReadRawExampleScheduleFromFile()
     {
-        string pathToRawScheduleFile = @"Data\ІСТ-5.json";
-        var rawScheduleText = File.ReadAllText(pathToRawScheduleFile);
-        var rawScheduleObj = JsonConvert.DeserializeObject<ScheduleFile>(rawScheduleText);
-
-        return rawScheduleObj;
+        return ScheduleActions.ReadRawExampleScheduleFromFile();
     }
 }
