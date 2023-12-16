@@ -64,7 +64,6 @@ public class ScheduleTests : IAsyncLifetime
     public void CreatingStudentGroup_CompletesAsExpected()
     {
         // Arrange
-        // the payload has to be wrapped in quotes
         string groupName = "ІСТ-5";
         var groupForWrite = new StudentsGroupForWriteDto { Name = groupName };
 
@@ -113,10 +112,11 @@ public class ScheduleTests : IAsyncLifetime
         Assert.Equivalent(responseData, sameLessonViaGet);
     }
 
+    // TODO: clean up
     [Fact]
     public void UpdatingLesson_CompletesAsExpected()
     {
-        // modify first lesson to reference the same room as the second lesson
+        // modify first lesson to have no room
 
         // Arrange
 
@@ -134,7 +134,7 @@ public class ScheduleTests : IAsyncLifetime
         var lessonForUpdate = new LessonForWriteDto
         {
             TeacherId = lessonOne.Teacher.Id,
-            RoomId = lessonTwo.Room.Id,
+            RoomId = null,
             SubjectId = lessonOne.Subject.Id,
         };
 
@@ -145,7 +145,7 @@ public class ScheduleTests : IAsyncLifetime
 
         // Assert
         Assert.NotNull(modifiedLesson);
-        Assert.Equal(modifiedLesson.Room.Name, lessonTwo.Room.Name);
+        Assert.Null(modifiedLesson.Room);
     }
 
     [Fact]

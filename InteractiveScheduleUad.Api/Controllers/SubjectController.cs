@@ -47,9 +47,6 @@ public class SubjectController : ControllerBase, IReactAdminCompatible<Subject>
             range, sort, filter,
             out int rangeStart, out int rangeEnd);
 
-        //var subjectFilterDto = JsonConvert.DeserializeObject<SubjectForReadDtoFilter>(filter);
-        //var filtered = _context.Subjects.ApplyFilter(subjectFilterDto).ToList();
-
         var totalCount = _context.Subjects.Count();
         Utls.AddContentRangeHeader(
             rangeStart, rangeEnd, totalCount,

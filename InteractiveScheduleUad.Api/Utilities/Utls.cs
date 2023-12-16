@@ -50,7 +50,7 @@ public static class Utls
         string range, string sort, string filter,
         out int rangeStart, out int rangeEnd) where DbSetRecordT : Entity where FilterT : FilterBase
     {
-        Debug.WriteLine($"filter: {filter}", "FilterSortAndRangeDbSet");
+        //Debug.WriteLine($"filter: {filter}", "FilterSortAndRangeDbSet");
 
         var records = _context.Set<DbSetRecordT>();
         IQueryable<DbSetRecordT> filteredResults;
@@ -68,31 +68,6 @@ public static class Utls
             filteredResults = _context.Set<DbSetRecordT>().ApplyFilter(filterDto);
         }
         var filteredEnumerableResults = filteredResults.AsEnumerable();
-
-        //if (filterObject.Count != 0 && false) // TODO: re-enable filtering
-        //{
-        //    var filterField = filterObject.Keys.First();
-        //    var filterValue = filterObject.Values.First();
-
-        //    filterField = Utls.ToTitleCase(filterField);
-
-        //    if (filterField == "Id" && filterValue.GetType().Name == "JArray")
-        //    {
-        //        // get only records with Ids specified in filter value
-        //        var filterValueAsJArray = (JArray)filterValue;
-        //        var ids = filterValueAsJArray.ToObject<int[]>();
-        //        filteredResults = filteredResults.Where(s => ids.Contains(Utls.GetPropertyChainValue<int>(s, "Id")));
-        //        //var one = 1;
-        //    }
-        //    else
-        //    {
-        //        // filter records by filter field and value (value of filter field should be a string)
-        //        filteredResults = filteredResults
-        //            .Where(s =>
-        //            Utls.GetPropertyChainValue<string>(s, filterField).ToLower()
-        //            .Contains(filterValue.ToString().ToLower()));
-        //    }
-        //}
 
         // Parse sort parameter
         var sortParams = JsonConvert.DeserializeObject<string[]>(sort);
@@ -117,40 +92,6 @@ public static class Utls
 
         return resultsRange;
     }
-
-    /// <summary>
-    /// First sorts, then extracts a range of records from the sorted results.
-    /// The operations are required by react-admin
-    /// </summary>
-    //public static IEnumerable<DbSetRecordT> FilterSortAndRangeDbSet<DbSetRecordT>(InteractiveScheduleUadApiDbContext _context,
-    //    string range, string sort, string filter,
-    //    out int rangeStart, out int rangeEnd) where DbSetRecordT : class
-    //{
-    //    var filteredResults = _context.Set<DbSetRecordT>();
-
-    //    // Parse sort parameter
-    //    var sortParams = JsonConvert.DeserializeObject<string[]>(sort);
-    //    var (sortField, sortOrder) = (sortParams[0], sortParams[1]);
-
-    //    // TODO: make react-admin send fields in titlecase
-    //    sortField = Utls.ToTitleCase(sortField);
-
-    //    // sort records by sort field and order (value of sort field should be a string)
-    //    object? keySelector(DbSetRecordT r) => Utls.GetPropertyChainValue<object>(r, sortField);
-    //    IEnumerable<DbSetRecordT> sortedResults = sortOrder == "ASC" ?
-    //        filteredResults.OrderBy(keySelector) :
-    //        filteredResults.OrderByDescending(keySelector);
-
-    //    // Parse range parameter
-    //    var rangeParams = JsonConvert.DeserializeObject<int[]>(range);
-    //    (rangeStart, rangeEnd) = (rangeParams[0], rangeParams[1]);
-
-    //    // extract the range of records from the sorted results
-    //    var rangeLength = rangeEnd - rangeStart + 1;
-    //    var resultsRange = sortedResults.Skip(rangeStart).Take(rangeLength);
-
-    //    return resultsRange;
-    //}
 
     // React admin requires the total count of items to be returned in a custom header
     public static void AddContentRangeHeader(int rangeStart, int rangeEnd, int totalCount,

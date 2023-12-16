@@ -6,6 +6,8 @@ using InteractiveScheduleUad.Core.Utils;
 using RestSharp;
 using InteractiveScheduleUad.Core.Extensions;
 using Newtonsoft.Json;
+using AutoFilterer.Types;
+using InteractiveScheduleUad.Api.Models.Filters;
 
 namespace InteractiveScheduleUad.E2ETests.UserActions;
 
@@ -19,15 +21,6 @@ public static class ScheduleActions
         // 2.1 create all teachers, subjects, rooms first.
         // 2.2 create base lessons
         // 2.3 create schedule lessons that map base schedules to full contexts: groups and time contexts
-
-        // Arrange
-
-        // read "raw" schedule from file
-        //var fileName = $"{groupName}.json";
-        //var pathToScheduleFile = @$"Data\{fileName}";
-        //var scheduleFile = ReadRawScheduleFromFile(pathToScheduleFile);
-
-        // Act
 
         // POST new group
         var groupForWrite = new StudentsGroupForWriteDto { Name = groupName };
@@ -118,17 +111,25 @@ public static class ScheduleActions
             teacherId = teacher.Id;
         }
 
+        // create subject
+
         var subjectForWrite = new Subject { Name = rawScheduleClass.name };
         var subject = client.EnsureExists<Subject, Subject>(
             ApiEndpoints.subjectsEndpoint, null, subjectForWrite, (s) => s.Name == rawScheduleClass.name);
         var subjectId = subject.Id;
 
+        // create room
+
         int? roomId = null;
         if (rawScheduleClass.room is not null)
         {
             var roomForWrite = new RoomForWriteDto { Name = rawScheduleClass.room };
-            var room = client.EnsureExists<Room, RoomForWriteDto>(
-                ApiEndpoints.roomsEndpoint, null, roomForWrite, (r) => r.Name == rawScheduleClass.room);
+            //var room = client.EnsureExists<Room, RoomForWriteDto>(
+            //    ApiEndpoints.roomsEndpoint, null, roomForWrite, (r) => r.Name == rawScheduleClass.room);
+            RoomForReadDtoFilter filter = new() { Name = rawScheduleClass.room };
+            string filterSerialized = JsonConvert.SerializeObject(filter);
+            var room = client.EnsureExists_FilterServerSide<Room, RoomForWriteDto>(
+                ApiEndpoints.roomsEndpoint, null, roomForWrite, filterSerialized);
             roomId = room.Id;
         }
 
