@@ -10,24 +10,24 @@ public static class RestClientExtensions
 
     // checks whether resource exists and returns it. If the resource doesn't exist, creates and returns it.
     // relies on POST endpoint returning the newly-created object
+    //public static EntityT EnsureExists<EntityT, PostPayloadT>
+    //    (this RestClient client,
+    //    string getEndpoint,
+    //    string? postEndpoint,
+    //    PostPayloadT postPayload,
+    //    Predicate<EntityT> compareF)
+    //     where PostPayloadT : class
+    //     where EntityT : class
+    //{
+    //    postEndpoint ??= getEndpoint;
+
+    //    EntityT? matchingEntityFromDb = CheckIfExists(client, getEndpoint, compareF);
+    //    EntityT entityToReturn = CreateIfNotExists(client, postEndpoint, postPayload, matchingEntityFromDb);
+
+    //    return entityToReturn;
+    //}
+
     public static EntityT EnsureExists<EntityT, PostPayloadT>
-        (this RestClient client,
-        string getEndpoint,
-        string? postEndpoint,
-        PostPayloadT postPayload,
-        Predicate<EntityT> compareF)
-         where PostPayloadT : class
-         where EntityT : class
-    {
-        postEndpoint ??= getEndpoint;
-
-        EntityT? matchingEntityFromDb = CheckIfExists(client, getEndpoint, compareF);
-        EntityT entityToReturn = CreateIfNotExists(client, postEndpoint, postPayload, matchingEntityFromDb);
-
-        return entityToReturn;
-    }
-
-    public static EntityT EnsureExists_FilterServerSide<EntityT, PostPayloadT>
         (this RestClient client,
         string getEndpoint,
         string? postEndpoint,
@@ -65,8 +65,6 @@ public static class RestClientExtensions
     where EntityT : class
     {
         var request = new RestRequest(getEndpoint);
-        //request.AddQueryParameter("range", "[0, 9]");
-        //request.AddQueryParameter("sort", "[\"Id\", \"ASC\"]");
         request.AddQueryParameter("filter", filter);
 
         var entity = client.Get<List<EntityT>>(request);
@@ -78,8 +76,4 @@ public static class RestClientExtensions
 
         return entity.First();
     }
-
-    //private static CheckIfExists()
-    //{
-    //}
 }

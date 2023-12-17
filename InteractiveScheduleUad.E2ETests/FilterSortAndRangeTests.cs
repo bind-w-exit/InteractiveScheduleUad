@@ -7,6 +7,7 @@ using InteractiveScheduleUad.Core.Utils;
 using RestSharp;
 using RestSharp.Authenticators;
 using InteractiveScheduleUad.E2ETests.Constants;
+using Newtonsoft.Json;
 
 namespace InteractiveScheduleUad.E2ETests;
 
@@ -152,9 +153,14 @@ public class FilterSortAndRangeTests : IAsyncLifetime
     {
         //subjectEncased = Utls.EncaseInQuotes(subjectName);
         var subjectForWrite = new Subject { Name = subjectName };
-        return client.EnsureExists
-            <Subject, Subject>
-            (subjectsEndpoint, null, subjectForWrite, (s) => s.Name == subjectName);
+
+        SubjectForReadDtoFilter subjectFilter = new() { Name = subjectName };
+        string subjectFilterSerialized = JsonConvert.SerializeObject(subjectFilter);
+
+        var subject = client.EnsureExists<Subject, Subject>(
+                                  subjectsEndpoint, null, subjectForWrite, subjectFilterSerialized);
+
+        return subject;
     }
 
     // POSTS a complete lesson with related entities pre-created in advance

@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using RestSharp;
 using InteractiveScheduleUad.E2ETests.Constants;
 using InteractiveScheduleUad.Core.Extensions;
+using InteractiveScheduleUad.Api.Models.Filters;
+using Newtonsoft.Json;
 
 namespace InteractiveScheduleUad.E2ETests.UserActions;
 
@@ -32,8 +34,17 @@ public static class TeacherActions
             Abbreviation = rawTeacher.DepartmentAbbreviation,
             Link = rawTeacher.DepartmentLink
         };
+        //var department = client.EnsureExists<Department, TeacherDepartmentForWriteDto>
+        //    (ApiEndpoints.teacherDepartmentEndpoint, null, newDepartment, (d) => d.Name == newDepartment.Name);
+
+        var departmentFilter = new TeacherDepartmentForReadDtoFilter()
+        {
+            Name = newDepartment.Name
+        };
+        var departmentFilterSerialized = JsonConvert.SerializeObject(departmentFilter);
         var department = client.EnsureExists<Department, TeacherDepartmentForWriteDto>
-            (ApiEndpoints.teacherDepartmentEndpoint, null, newDepartment, (d) => d.Name == newDepartment.Name);
+            (ApiEndpoints.teacherDepartmentEndpoint, null, newDepartment, departmentFilterSerialized);
+
         var departmentId = department.Id;
 
         // construct teacher object

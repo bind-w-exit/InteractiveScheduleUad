@@ -63,8 +63,13 @@ public static class ScheduleActions
         };
 
         var groupForWrite = new StudentsGroupForWriteDto { Name = groupName };
+
+        var groupFilter = new StudentsGroupForReadDtoFilter { Name = groupName };
+        var groupFilterSerialized = JsonConvert.SerializeObject(groupFilter);
+
         var group = client.EnsureExists<StudentsGroup, StudentsGroupForWriteDto>(
-            ApiEndpoints.groupsEndpoint, null, groupForWrite, (g) => g.Name == groupName);
+                       ApiEndpoints.groupsEndpoint, null, groupForWrite, groupFilterSerialized);
+
         var groupId = group.Id;
 
         FullContextForWriteDto fullContext = new()
@@ -105,8 +110,12 @@ public static class ScheduleActions
         if (rawScheduleClass.teacher is not null)
         {
             TeacherForWriteDto teacherForWrite = new() { LastName = rawScheduleClass.teacher, FirstName = "" };
-            var teacher = client.EnsureExists<TeacherForReadDto, TeacherForWriteDto>(
-                ApiEndpoints.teachersEndpoint, null, teacherForWrite, (t) => t.LastName == rawScheduleClass.teacher);
+
+            TeacherForReadDtoFilter teacherFilter = new() { LastName = rawScheduleClass.teacher };
+            string teacherFilterSerialized = JsonConvert.SerializeObject(teacherFilter);
+
+            var teacher = client.EnsureExists<Teacher, TeacherForWriteDto>(
+                               ApiEndpoints.teachersEndpoint, null, teacherForWrite, teacherFilterSerialized);
 
             teacherId = teacher.Id;
         }
@@ -114,8 +123,13 @@ public static class ScheduleActions
         // create subject
 
         var subjectForWrite = new Subject { Name = rawScheduleClass.name };
+
+        SubjectForReadDtoFilter subjectFilter = new() { Name = rawScheduleClass.name };
+        string subjectFilterSerialized = JsonConvert.SerializeObject(subjectFilter);
+
         var subject = client.EnsureExists<Subject, Subject>(
-            ApiEndpoints.subjectsEndpoint, null, subjectForWrite, (s) => s.Name == rawScheduleClass.name);
+                       ApiEndpoints.subjectsEndpoint, null, subjectForWrite, subjectFilterSerialized);
+
         var subjectId = subject.Id;
 
         // create room
@@ -124,12 +138,13 @@ public static class ScheduleActions
         if (rawScheduleClass.room is not null)
         {
             var roomForWrite = new RoomForWriteDto { Name = rawScheduleClass.room };
-            //var room = client.EnsureExists<Room, RoomForWriteDto>(
-            //    ApiEndpoints.roomsEndpoint, null, roomForWrite, (r) => r.Name == rawScheduleClass.room);
-            RoomForReadDtoFilter filter = new() { Name = rawScheduleClass.room };
-            string filterSerialized = JsonConvert.SerializeObject(filter);
-            var room = client.EnsureExists_FilterServerSide<Room, RoomForWriteDto>(
-                ApiEndpoints.roomsEndpoint, null, roomForWrite, filterSerialized);
+
+            RoomForReadDtoFilter roomFilter = new() { Name = rawScheduleClass.room };
+            string roomFilterSerialized = JsonConvert.SerializeObject(roomFilter);
+
+            var room = client.EnsureExists<Room, RoomForWriteDto>(
+                ApiEndpoints.roomsEndpoint, null, roomForWrite, roomFilterSerialized);
+
             roomId = room.Id;
         }
 
@@ -143,12 +158,21 @@ public static class ScheduleActions
 
         // POST the lesson with entities
 
+        var lessonFilter = new LessonForReadDtoFilter
+        {
+            Subject = new SubjectForReadDtoFilter { Id = subjectId },
+            Room = new RoomForReadDtoFilter { Id = roomId },
+            Teacher = new TeacherForReadDtoFilter { Id = teacherId }
+        };
+
+        var lessonFilterSerialized = JsonConvert.SerializeObject(lessonFilter);
+
         responseData = client.EnsureExists
             <LessonForReadDto, LessonForWriteDto>(
             ApiEndpoints.lessonsEndpoint,
             null,
             requestBody,
-            (l) => l.Subject.Id == subjectId && l.Room?.Id == roomId && l.Teacher?.Id == teacherId);
+            lessonFilterSerialized);
 
         return responseData;
     }

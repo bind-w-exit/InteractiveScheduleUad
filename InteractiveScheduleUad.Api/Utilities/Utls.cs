@@ -67,7 +67,7 @@ public static class Utls
             var filterDto = JsonConvert.DeserializeObject<FilterT>(filter);
             filteredResults = _context.Set<DbSetRecordT>().ApplyFilter(filterDto);
         }
-        var filteredEnumerableResults = filteredResults.AsEnumerable();
+        var filteredEnumerableResults = filteredResults.AsEnumerable(); // to materialize the query
 
         // Parse sort parameter
         var sortParams = JsonConvert.DeserializeObject<string[]>(sort);

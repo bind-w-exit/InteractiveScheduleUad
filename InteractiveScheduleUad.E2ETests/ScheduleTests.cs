@@ -202,7 +202,7 @@ public class ScheduleTests : IAsyncLifetime
     }
 
     [Fact]
-    public void CreatingAllScheduleLessonsOfSpecificSchedule_CompletesAsExpected()
+    public async void CreatingAllScheduleLessonsOfSpecificSchedule_CompletesAsExpected()
     {
         // to create a schedule, you need to:
         // 1. create a group
