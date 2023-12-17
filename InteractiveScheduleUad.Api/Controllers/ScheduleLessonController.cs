@@ -197,8 +197,11 @@ public class ScheduleLessonController : ControllerBase, IReactAdminCompatible<Sc
         });
 
         fullContext = Utls.EnsureExists(
-            _context.FullContexts, fullContext,
-            (ctx) => ctx.StudentsGroupId == fullContext.StudentsGroupId && ctx.TimeContextId == fullContext.TimeContextId
+            dbSet: _context.FullContexts,
+            entity: fullContext,
+            compareF: (ctx) => ctx.StudentsGroupId == fullContext.StudentsGroupId
+            &&
+            ctx.TimeContextId == fullContext.TimeContextId
                 );
 
         await _context.SaveChangesAsync(); // for full context to get own id

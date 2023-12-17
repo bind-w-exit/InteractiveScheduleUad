@@ -6,10 +6,6 @@ using InteractiveScheduleUad.Api.Models.Filters;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System.Diagnostics;
-using System.Globalization;
-using System.Reflection.Metadata.Ecma335;
 
 namespace InteractiveScheduleUad.Api.Utilities;
 

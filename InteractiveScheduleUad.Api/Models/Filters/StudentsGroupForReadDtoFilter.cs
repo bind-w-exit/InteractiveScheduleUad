@@ -8,6 +8,6 @@ public class StudentsGroupForReadDtoFilter : FilterBase
 {
     public int? Id { get; set; }
 
-    [StringFilterOptions(StringFilterOption.Contains)]
+    [StringFilterOptions(StringFilterOption.Equals)]
     public string? Name { get; set; }
 }
